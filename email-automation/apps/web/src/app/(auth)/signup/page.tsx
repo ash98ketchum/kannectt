@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Check } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/utils/supabase/client";
 
 const STRENGTH = [
   { label: "8+ characters",       test: (p: string) => p.length >= 8 },
@@ -21,10 +21,7 @@ export default function SignupPage() {
   const [error, setError]       = useState<string | null>(null);
   const [done, setDone]         = useState(false);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const supabase = createClient();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();

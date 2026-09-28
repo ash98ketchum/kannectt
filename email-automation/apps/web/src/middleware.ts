@@ -1,55 +1,39 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/middleware";
 
-const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES  = ["/", "/login", "/signup"];
+const AUTH_ROUTES    = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // ── Short-circuit public routes before touching Supabase ─────────────────
+  // ── Short-circuit public routes — no Supabase call needed ────────────────
+  // Also protects against crash when env vars are placeholder values
   if (PUBLIC_ROUTES.includes(path)) {
     return NextResponse.next({ request });
   }
 
-  // ── Guard: skip auth check if Supabase isn't configured yet ──────────────
+  // ── Guard: skip if Supabase not configured yet ────────────────────────────
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-  const configured =
-    url.startsWith("https://") && !url.includes("placeholder") && key.length > 20;
-
-  if (!configured) {
+  if (!url.startsWith("https://") || url.includes("placeholder") || key.length < 20) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ── Real auth check ───────────────────────────────────────────────────────
-  const response = NextResponse.next({ request });
-
-  const supabase = createServerClient(url, key, {
-    cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value;
-      },
-      set(name: string, value: string, options: Record<string, unknown>) {
-        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
-      },
-      remove(name: string, options: Record<string, unknown>) {
-        response.cookies.set(name, "", options as Parameters<typeof response.cookies.set>[2]);
-      },
-    },
-  });
-
+  // ── Auth check ────────────────────────────────────────────────────────────
+  const { supabase, supabaseResponse } = createClient(request);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect logged-in users away from auth pages
-  if (path === "/login" || path === "/signup") {
+  // Logged-in users visiting auth pages → send to dashboard
+  if (AUTH_ROUTES.includes(path)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
