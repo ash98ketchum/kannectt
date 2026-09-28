@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Plus, Trash2, Eye, Send, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Plus, Trash2, Eye, Send, FileText, Loader2, AlertCircle, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
-import type { SendResult } from "@/types";
+import type { SendResult, ResumeMetadata } from "@/types";
 
 type Target = { id: string; mail: string; company: string; type: "recruiter" | "careers" };
 
@@ -21,32 +21,78 @@ Best regards,
 [Your Name]`;
 
 export default function SendPage() {
-  const [resumeFile, setResumeFile]   = useState<File | null>(null);
-  const [template, setTemplate]       = useState(DEFAULT_TEMPLATE);
-  const [targets, setTargets]         = useState<Target[]>([]);
-  const [newMail, setNewMail]         = useState("");
-  const [newCompany, setNewCompany]   = useState("");
-  const [newType, setNewType]         = useState<"recruiter" | "careers">("recruiter");
-  const [previews, setPreviews]       = useState<SendResult[]>([]);
-  const [loading, setLoading]         = useState(false);
-  const [sending, setSending]         = useState(false);
-  const [step, setStep]               = useState<"form" | "preview" | "done">("form");
-  const [error, setError]             = useState<string | null>(null);
-  const [balance, setBalance]         = useState<number | null>(null);
-  const [userId, setUserId]           = useState<string | null>(null);
+  // Auth
+  const [userId, setUserId]               = useState<string | null>(null);
+  const [balance, setBalance]             = useState<number | null>(null);
+
+  // Resume state
+  const [savedResume, setSavedResume]     = useState<ResumeMetadata | null>(null);
+  const [newResumeFile, setNewResumeFile] = useState<File | null>(null);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeError, setResumeError]     = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Load current user + credit balance
+  // Email compose
+  const [template, setTemplate]           = useState(DEFAULT_TEMPLATE);
+  const [targets, setTargets]             = useState<Target[]>([]);
+  const [newMail, setNewMail]             = useState("");
+  const [newCompany, setNewCompany]       = useState("");
+  const [newType, setNewType]             = useState<"recruiter" | "careers">("recruiter");
+
+  // Flow
+  const [previews, setPreviews]           = useState<SendResult[]>([]);
+  const [loading, setLoading]             = useState(false);
+  const [sending, setSending]             = useState(false);
+  const [step, setStep]                   = useState<"form" | "preview" | "done">("form");
+  const [error, setError]                 = useState<string | null>(null);
+
+  // ── Boot: load user, balance, saved resume ──────────────────────────────
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
-      setUserId(data.user.id);
-      (api.credits.balance(data.user.id) as Promise<{ balance: number }>)
+      const uid = data.user.id;
+      setUserId(uid);
+
+      // Load balance
+      (api.credits.balance(uid) as Promise<{ balance: number }>)
         .then(r => setBalance(r.balance))
+        .catch(() => null);
+
+      // Load saved resume (may 404 if none yet)
+      api.profile.getResume(uid)
+        .then(r => setSavedResume(r as ResumeMetadata))
         .catch(() => null);
     });
   }, []);
 
+  // ── Resume actions ───────────────────────────────────────────────────────
+  const handleResumeSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) { setNewResumeFile(file); setResumeError(null); }
+  };
+
+  const saveResume = async () => {
+    if (!userId || !newResumeFile) return;
+    setUploadingResume(true); setResumeError(null);
+    try {
+      const meta = await api.profile.uploadResume(userId, newResumeFile);
+      setSavedResume(meta);
+      setNewResumeFile(null);
+    } catch (e: unknown) {
+      setResumeError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const removeResume = async () => {
+    if (!userId) return;
+    await api.profile.deleteResume(userId).catch(() => null);
+    setSavedResume(null);
+    setNewResumeFile(null);
+  };
+
+  // ── Targets ──────────────────────────────────────────────────────────────
   const addTarget = () => {
     if (!newMail.trim()) return;
     setTargets(t => [...t, {
@@ -60,6 +106,7 @@ export default function SendPage() {
 
   const removeTarget = (id: string) => setTargets(t => t.filter(x => x.id !== id));
 
+  // ── Dry run ──────────────────────────────────────────────────────────────
   const dryRun = async () => {
     setLoading(true); setError(null);
     try {
@@ -76,6 +123,7 @@ export default function SendPage() {
     }
   };
 
+  // ── Execute send ─────────────────────────────────────────────────────────
   const executeSend = async () => {
     if (!userId) { setError("Not signed in"); return; }
     setSending(true); setError(null);
@@ -86,7 +134,13 @@ export default function SendPage() {
         targets.map(({ mail, company, type }) => ({ mail, company, type }))
       ));
       form.append("user_id", userId);
-      if (resumeFile) form.append("resume", resumeFile);
+
+      // Prefer saved resume (storage path), fall back to new file upload
+      if (savedResume) {
+        form.append("resume_url", savedResume.path);
+      } else if (newResumeFile) {
+        form.append("resume", newResumeFile);
+      }
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/send/execute`,
@@ -108,14 +162,16 @@ export default function SendPage() {
   };
 
   const creditCost = targets.length * 3;
+  const hasResume  = !!savedResume || !!newResumeFile;
   const hasEnough  = balance !== null && balance >= creditCost;
 
   return (
     <div className="space-y-8">
+      {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Send Emails</h1>
-          <p className="text-neutral-400 text-sm mt-1">Upload resume, add targets, preview then send.</p>
+          <p className="text-neutral-400 text-sm mt-1">Upload resume · add targets · preview · send.</p>
         </div>
         {balance !== null && (
           <div className="text-right">
@@ -137,40 +193,85 @@ export default function SendPage() {
       {/* ── FORM ── */}
       {step === "form" && (
         <div className="space-y-6">
-          {/* Resume upload */}
+
+          {/* Resume section */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Resume (PDF)</label>
-            <input ref={fileRef} type="file" accept=".pdf" className="hidden"
-              onChange={e => setResumeFile(e.target.files?.[0] ?? null)} />
-            <div
-              onClick={() => fileRef.current?.click()}
-              className={cn(
-                "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition",
-                resumeFile ? "border-green-800 bg-green-950/20" : "border-neutral-800 hover:border-neutral-600"
-              )}
-            >
-              {resumeFile ? (
-                <div className="flex items-center justify-center gap-2 text-green-400 text-sm">
-                  <FileText size={16} /> {resumeFile.name}
+
+            {savedResume ? (
+              /* Saved resume card */
+              <div className="flex items-center gap-3 border border-green-800 bg-green-950/20 rounded-xl px-4 py-3">
+                <FileText size={16} className="text-green-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-green-300 font-medium truncate">{savedResume.filename}</p>
+                  <p className="text-xs text-green-700">Saved · reused automatically across sends</p>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <Upload size={20} className="text-neutral-600" />
-                  <p className="text-sm text-neutral-500">Drop your resume PDF or click to browse</p>
+                <a href={savedResume.signed_url} target="_blank" rel="noreferrer"
+                  className="text-xs text-green-500 underline hover:text-green-300 transition">
+                  Preview
+                </a>
+                <button onClick={removeResume}
+                  className="text-neutral-600 hover:text-red-400 transition ml-1">
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              /* Upload area */
+              <>
+                <input ref={fileRef} type="file" accept=".pdf" className="hidden"
+                  onChange={handleResumeSelect} />
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition",
+                    newResumeFile ? "border-blue-800 bg-blue-950/20" : "border-neutral-800 hover:border-neutral-600"
+                  )}
+                >
+                  {newResumeFile ? (
+                    <div className="flex items-center justify-center gap-2 text-blue-400 text-sm">
+                      <FileText size={16} /> {newResumeFile.name}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload size={20} className="text-neutral-600" />
+                      <p className="text-sm text-neutral-500">Drop PDF or click to browse</p>
+                      <p className="text-xs text-neutral-700">Save once · reuse in every send</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+                {newResumeFile && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={saveResume}
+                      disabled={uploadingResume}
+                      className="flex items-center gap-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-1.5 rounded-lg transition disabled:opacity-40"
+                    >
+                      {uploadingResume
+                        ? <><Loader2 size={12} className="animate-spin" /> Saving…</>
+                        : <><Check size={12} /> Save resume</>}
+                    </button>
+                    <span className="text-xs text-neutral-600">or it will be attached once without saving</span>
+                  </div>
+                )}
+                {resumeError && <p className="text-xs text-red-400">{resumeError}</p>}
+              </>
+            )}
           </div>
 
           {/* Template */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Email template</label>
-            <p className="text-xs text-neutral-600">Use <code className="text-neutral-500">{"{{RECRUITER_NAME}}"}</code>, <code className="text-neutral-500">{"{{COMPANY_NAME}}"}</code>, <code className="text-neutral-500">{"{{COMPANY_HIGHLIGHT}}"}</code></p>
+            <p className="text-xs text-neutral-600">
+              Placeholders:{" "}
+              {["{{RECRUITER_NAME}}", "{{COMPANY_NAME}}", "{{COMPANY_HIGHLIGHT}}"].map(p => (
+                <code key={p} className="text-neutral-500 mr-2">{p}</code>
+              ))}
+            </p>
             <textarea
               value={template}
               onChange={e => setTemplate(e.target.value)}
               rows={8}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 font-mono resize-y"
+              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-300 focus:outline-none focus:border-neutral-500 font-mono resize-y"
             />
           </div>
 
@@ -239,11 +340,15 @@ export default function SendPage() {
               <button onClick={dryRun} disabled={loading}
                 className="flex items-center gap-2 border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition disabled:opacity-40">
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
-                {loading ? "Generating previews…" : "Dry run — preview emails"}
+                {loading ? "Generating previews…" : "Preview emails"}
               </button>
-              <span className={cn("text-xs", !hasEnough && balance !== null ? "text-yellow-500" : "text-neutral-500")}>
+              <span className={cn(
+                "text-xs",
+                !hasEnough && balance !== null ? "text-yellow-500" : "text-neutral-500"
+              )}>
                 {targets.length} email{targets.length > 1 ? "s" : ""} · {creditCost} credits
-                {!hasEnough && balance !== null && " · insufficient"}
+                {!hasResume && " · no resume attached"}
+                {!hasEnough && balance !== null && " · insufficient credits"}
               </span>
             </div>
           )}
@@ -254,8 +359,8 @@ export default function SendPage() {
       {step === "preview" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-neutral-400">{previews.length} email{previews.length > 1 ? "s" : ""} ready to review</p>
-            <button onClick={() => setStep("form")} className="text-xs text-neutral-500 hover:text-neutral-300 transition underline">
+            <p className="text-sm text-neutral-400">{previews.length} email{previews.length > 1 ? "s" : ""} ready</p>
+            <button onClick={() => setStep("form")} className="text-xs text-neutral-500 hover:text-neutral-300 underline">
               Edit targets
             </button>
           </div>
@@ -288,7 +393,12 @@ export default function SendPage() {
             {!hasEnough && balance !== null && (
               <a href="/credits" className="text-xs text-yellow-400 underline">Need more credits</a>
             )}
-            <p className="text-xs text-neutral-500">Resume will be attached automatically</p>
+            {hasResume && (
+              <p className="text-xs text-neutral-600 flex items-center gap-1">
+                <FileText size={11} />
+                {savedResume?.filename ?? newResumeFile?.name} will be attached
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -297,25 +407,23 @@ export default function SendPage() {
       {step === "done" && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">
-            {previews.filter(p => p.status === "sent").length} / {previews.length} sent ✓
+            {previews.filter(p => p.status === "sent").length}/{previews.length} emails sent ✓
           </h2>
           <div className="space-y-2">
             {previews.map((p, i) => (
               <div key={i} className="flex items-center gap-3 border border-neutral-800 rounded-lg px-4 py-3 text-sm">
-                <span className={cn(
-                  "w-2 h-2 rounded-full shrink-0",
-                  p.status === "sent" ? "bg-green-500" : "bg-red-500"
-                )} />
+                <span className={cn("w-2 h-2 rounded-full shrink-0",
+                  p.status === "sent" ? "bg-green-500" : "bg-red-500")} />
                 <span className="font-mono text-neutral-300 truncate">{p.to}</span>
-                <span className="ml-auto text-neutral-500">{p.subject}</span>
-                <span className={cn("text-xs", p.status === "sent" ? "text-green-400" : "text-red-400")}>
+                <span className="ml-auto text-neutral-500 text-xs truncate max-w-xs">{p.subject}</span>
+                <span className={cn("text-xs shrink-0", p.status === "sent" ? "text-green-400" : "text-red-400")}>
                   {p.status}
                 </span>
               </div>
             ))}
           </div>
           <button
-            onClick={() => { setStep("form"); setTargets([]); setPreviews([]); }}
+            onClick={() => { setStep("form"); setTargets([]); setPreviews([]); setError(null); }}
             className="border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition"
           >
             Send another batch

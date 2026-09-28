@@ -28,3 +28,18 @@ export type ContactPublic = {
 };
 
 export type CreditPackage = "starter" | "pro" | "power";
+
+export type CreditOrder = {
+  id: string;
+  package: string;
+  credits: number;
+  amount_usd_cents: number;
+  status: "pending" | "completed" | "failed";
+  created_at: string;
+};
+
+export type ResumeMetadata = {
+  path: string;
+  filename: string;
+  signed_url: string;
+};

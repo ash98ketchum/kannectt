@@ -25,6 +25,8 @@ export const api = {
         method: "POST",
         body: JSON.stringify(body),
       }),
+    orders: (userId: string) =>
+      apiFetch(`/api/credits/orders/${userId}`),
   },
   directory: {
     list: (userId: string, params?: Record<string, string>) => {
@@ -36,5 +38,22 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ contact_ids: contactIds }),
       }),
+  },
+  profile: {
+    getResume: (userId: string) =>
+      apiFetch(`/api/profile/resume?user_id=${userId}`),
+    uploadResume: (userId: string, file: File): Promise<{ path: string; filename: string; signed_url: string }> => {
+      const form = new FormData();
+      form.append("resume", file);
+      return fetch(`${API_URL}/api/profile/resume?user_id=${userId}`, {
+        method: "POST",
+        body: form,
+      }).then(async r => {
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail ?? `API error ${r.status}`); }
+        return r.json();
+      });
+    },
+    deleteResume: (userId: string) =>
+      fetch(`${API_URL}/api/profile/resume?user_id=${userId}`, { method: "DELETE" }),
   },
 };
