@@ -1,8 +1,10 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
+
     # App
     ENVIRONMENT: str = "development"
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
@@ -28,10 +30,6 @@ class Settings(BaseSettings):
     CREDIT_COST_TEMPLATE_GEN: int = 4
     CREDIT_COST_UNLOCK: int = 3
     FREE_TIER_SENDS: int = 1
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 settings = Settings()

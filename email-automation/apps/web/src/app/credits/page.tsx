@@ -1,33 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 const PACKAGES = [
   {
+    id: "starter" as const,
     name: "Starter",
     credits: 20,
     price: "$2",
-    priceNum: 2,
     perCredit: "$0.10",
     popular: false,
     desc: "Try it out",
   },
   {
+    id: "pro" as const,
     name: "Pro",
     credits: 60,
     price: "$5",
-    priceNum: 5,
     perCredit: "$0.083",
     popular: true,
     desc: "Most popular",
   },
   {
+    id: "power" as const,
     name: "Power",
     credits: 150,
     price: "$10",
-    priceNum: 10,
     perCredit: "$0.067",
     popular: false,
     desc: "Best value",
@@ -39,17 +41,56 @@ const COST_TABLE = [
   { action: "Generate template from resume", cost: "4 credits" },
   { action: "Unlock 1 recruiter contact",    cost: "3–5 credits" },
   { action: "Bulk send (10 emails)",         cost: "25 credits" },
-  { action: "First email on signup",         cost: "Free" },
+  { action: "First email on signup",         cost: "Free"       },
 ];
 
 export default function CreditsPage() {
-  const [balance, setBalance] = useState(7);
-  const [bought, setBought]   = useState<string | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [userId, setUserId]   = useState<string | null>(null);
+  const [buying, setBuying]   = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
-  const handleBuy = (pkg: typeof PACKAGES[0]) => {
-    setBalance(b => b + pkg.credits);
-    setBought(pkg.name);
-    setTimeout(() => setBought(null), 2000);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      setUserId(data.user.id);
+      (api.credits.balance(data.user.id) as Promise<{ balance: number }>)
+        .then(r => setBalance(r.balance))
+        .catch(() => null);
+    });
+  }, []);
+
+  // Handle Stripe success redirect (?success=1)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "1" && userId) {
+      (api.credits.balance(userId) as Promise<{ balance: number }>)
+        .then(r => setBalance(r.balance))
+        .catch(() => null);
+    }
+  }, [userId]);
+
+  const handleBuy = async (pkg: typeof PACKAGES[0]) => {
+    if (!userId) { setError("Not signed in"); return; }
+    setBuying(pkg.id); setError(null);
+    try {
+      const origin = window.location.origin;
+      const res = await api.credits.checkout({
+        package: pkg.id,
+        success_url: `${origin}/credits?success=1`,
+        cancel_url:  `${origin}/credits`,
+      }, userId) as { checkout_url: string };
+      window.location.href = res.checkout_url;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Checkout failed";
+      // Stripe not configured in dev — show friendly message
+      if (msg.includes("not configured")) {
+        setError("Payments are not configured yet. Add STRIPE_SECRET_KEY to the API .env file.");
+      } else {
+        setError(msg);
+      }
+      setBuying(null);
+    }
   };
 
   return (
@@ -60,10 +101,16 @@ export default function CreditsPage() {
           <p className="text-neutral-400 text-sm mt-1">Power your outreach campaigns</p>
         </div>
         <div className="text-right">
-          <p className="text-3xl font-bold">{balance}</p>
+          <p className="text-3xl font-bold">{balance ?? "—"}</p>
           <p className="text-xs text-neutral-500 mt-0.5">credits remaining</p>
         </div>
       </div>
+
+      {error && (
+        <div className="flex items-start gap-2 border border-yellow-900 bg-yellow-950/50 rounded-lg px-4 py-3 text-sm text-yellow-400">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" /> {error}
+        </div>
+      )}
 
       {/* Packages */}
       <div className="grid grid-cols-3 gap-4">
@@ -103,16 +150,17 @@ export default function CreditsPage() {
             </div>
             <button
               onClick={() => handleBuy(pkg)}
+              disabled={buying === pkg.id}
               className={cn(
-                "w-full py-2 rounded-lg text-sm font-medium transition",
-                bought === pkg.name
-                  ? "bg-green-900 text-green-300 border border-green-800"
-                  : pkg.popular
-                  ? "bg-white text-black hover:bg-neutral-200"
-                  : "border border-neutral-700 hover:border-neutral-500 text-neutral-300"
+                "w-full py-2 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2",
+                pkg.popular
+                  ? "bg-white text-black hover:bg-neutral-200 disabled:opacity-60"
+                  : "border border-neutral-700 hover:border-neutral-500 text-neutral-300 disabled:opacity-60"
               )}
             >
-              {bought === pkg.name ? `+ ${pkg.credits} credits added!` : `Buy ${pkg.credits} credits`}
+              {buying === pkg.id
+                ? <><Loader2 size={14} className="animate-spin" /> Redirecting…</>
+                : `Buy ${pkg.credits} credits`}
             </button>
           </div>
         ))}

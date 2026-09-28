@@ -1,12 +1,12 @@
 import pytest
-from httpx import AsyncClient
-from unittest.mock import patch, MagicMock
+from httpx import AsyncClient, ASGITransport
+from unittest.mock import patch
 from app.main import app
 
 
 @pytest.mark.asyncio
 async def test_health():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         r = await client.get("/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
@@ -22,7 +22,7 @@ async def test_dry_run_returns_preview_not_sent():
     }
     with patch("app.routers.emails.llm.personalise") as mock_llm:
         mock_llm.return_value = ("Application for FDE at Google", "Hi Hiring Team, ...")
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             r = await client.post("/api/send/dry-run", json=payload)
 
     assert r.status_code == 200
@@ -47,7 +47,7 @@ async def test_dry_run_multiple_targets():
     }
     with patch("app.routers.emails.llm.personalise") as mock_llm:
         mock_llm.return_value = ("Subject", "Body")
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             r = await client.post("/api/send/dry-run", json=payload)
 
     assert r.status_code == 200
@@ -63,7 +63,7 @@ async def test_dry_run_llm_failure_returns_failed_status():
         "dry_run": True,
     }
     with patch("app.routers.emails.llm.personalise", side_effect=Exception("Groq timeout")):
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             r = await client.post("/api/send/dry-run", json=payload)
 
     assert r.status_code == 200
@@ -76,7 +76,7 @@ async def test_dry_run_llm_failure_returns_failed_status():
 async def test_execute_returns_402_when_credits_insufficient():
     """Execute endpoint must return 402 if user doesn't have enough credits."""
     with patch("app.routers.emails.get_balance", return_value=2):  # only 2 credits
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             r = await client.post("/api/send/execute", data={
                 "template": "Hi {{RECRUITER_NAME}}",
                 "targets_json": '[{"mail":"r@google.com","company":"Google","type":"recruiter"}]',

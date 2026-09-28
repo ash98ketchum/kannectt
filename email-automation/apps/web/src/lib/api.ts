@@ -16,11 +16,15 @@ export const api = {
   send: {
     dryRun: (body: object) =>
       apiFetch("/api/send/dry-run", { method: "POST", body: JSON.stringify(body) }),
+    // execute uses FormData — caller builds FormData directly and calls fetch
   },
   credits: {
     balance: (userId: string) => apiFetch(`/api/credits/balance/${userId}`),
-    checkout: (body: object) =>
-      apiFetch("/api/credits/checkout", { method: "POST", body: JSON.stringify(body) }),
+    checkout: (body: object, userId: string) =>
+      apiFetch(`/api/credits/checkout?user_id=${userId}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
   directory: {
     list: (userId: string, params?: Record<string, string>) => {
