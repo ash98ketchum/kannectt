@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+.turbo/
+out/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+apps/api/.env
+apps/web/.env.local
+
+# Uploads / resumes
+*.pdf
+uploads/
+
+# Logs
+*.log
+sent_log.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp

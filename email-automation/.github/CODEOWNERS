@@ -1,0 +1,16 @@
+# CODEOWNERS — who reviews what by default
+
+# Global fallback
+* @ash98ketchum
+
+# API / backend
+apps/api/ @ash98ketchum
+
+# Frontend
+apps/web/ @ash98ketchum
+
+# Database migrations — always need explicit review
+supabase/migrations/ @ash98ketchum
+
+# CI/CD — always need explicit review
+.github/ @ash98ketchum

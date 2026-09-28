@@ -1,0 +1,39 @@
+name: Deploy — Staging
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy-api-staging:
+    name: Deploy API → Staging (Railway)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy API
+        run: railway up --service email-automation-api-staging
+        working-directory: apps/api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
+
+  deploy-web-staging:
+    name: Deploy Web → Staging (Vercel)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel (Preview)
+        run: vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --env=preview
+        working-directory: apps/web
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

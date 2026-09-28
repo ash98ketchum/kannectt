@@ -1,0 +1,28 @@
+# FastAPI + server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+
+# Settings
+pydantic-settings>=2.0.0
+
+# LLM
+groq>=0.9.0
+
+# Database
+supabase>=2.0.0
+
+# Payments
+stripe>=9.0.0
+
+# Email
+# (stdlib smtplib used — no extra package needed)
+
+# Encryption
+cryptography>=42.0.0
+
+# Dev / testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
+ruff>=0.4.0
