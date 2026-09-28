@@ -3,54 +3,47 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = ["/", "/login", "/signup"];
 
-// Detect placeholder / missing Supabase config
-const SUPABASE_CONFIGURED =
-  !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
-  process.env.NEXT_PUBLIC_SUPABASE_URL !== "https://placeholder.supabase.co" &&
-  !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== "placeholder-anon-key";
-
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // If Supabase isn't configured yet (local dev without real credentials),
-  // allow all public routes and block protected ones with a friendly redirect.
-  if (!SUPABASE_CONFIGURED) {
-    if (!PUBLIC_ROUTES.includes(path)) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  // ── Short-circuit public routes before touching Supabase ─────────────────
+  // This avoids the "URL and Key are required" crash when running locally
+  // without real credentials, and also saves a network round-trip on every
+  // public page load in production.
+  if (PUBLIC_ROUTES.includes(path)) {
     return NextResponse.next({ request });
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  // ── Guard: skip auth check if Supabase isn't configured ──────────────────
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const configured = url.startsWith("https://") && !url.includes("placeholder") && key.length > 20;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll()          { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Redirect unauthenticated users away from protected routes
-  if (!user && !PUBLIC_ROUTES.includes(path)) {
+  if (!configured) {
+    // No real Supabase — redirect all protected routes to login
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect logged-in users away from auth pages
-  if (user && (path === "/login" || path === "/signup")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // ── Real auth check ───────────────────────────────────────────────────────
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll()              { return request.cookies.getAll(); },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return supabaseResponse;
