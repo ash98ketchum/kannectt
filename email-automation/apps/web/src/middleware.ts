@@ -7,35 +7,33 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // ── Short-circuit public routes before touching Supabase ─────────────────
-  // This avoids the "URL and Key are required" crash when running locally
-  // without real credentials, and also saves a network round-trip on every
-  // public page load in production.
   if (PUBLIC_ROUTES.includes(path)) {
     return NextResponse.next({ request });
   }
 
-  // ── Guard: skip auth check if Supabase isn't configured ──────────────────
+  // ── Guard: skip auth check if Supabase isn't configured yet ──────────────
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-  const configured = url.startsWith("https://") && !url.includes("placeholder") && key.length > 20;
+  const configured =
+    url.startsWith("https://") && !url.includes("placeholder") && key.length > 20;
 
   if (!configured) {
-    // No real Supabase — redirect all protected routes to login
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // ── Real auth check ───────────────────────────────────────────────────────
-  let supabaseResponse = NextResponse.next({ request });
+  const response = NextResponse.next({ request });
 
   const supabase = createServerClient(url, key, {
     cookies: {
-      getAll()              { return request.cookies.getAll(); },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: Record<string, unknown>) {
+        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
+      },
+      remove(name: string, options: Record<string, unknown>) {
+        response.cookies.set(name, "", options as Parameters<typeof response.cookies.set>[2]);
       },
     },
   });
@@ -46,7 +44,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return supabaseResponse;
+  // Redirect logged-in users away from auth pages
+  if (path === "/login" || path === "/signup") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  return response;
 }
 
 export const config = {

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 /**
  * Server-side Supabase client for use in Server Components and Route Handlers.
+ * Compatible with @supabase/ssr versions that use get/set/remove cookie API.
  */
 export function createSupabaseServerClient() {
   const cookieStore = cookies();
@@ -11,15 +12,14 @@ export function createSupabaseServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll()          { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Ignore: called from a Server Component (read-only cookies)
-          }
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: Record<string, unknown>) {
+          try { cookieStore.set({ name, value, ...options }); } catch { /* Server Component */ }
+        },
+        remove(name: string, options: Record<string, unknown>) {
+          try { cookieStore.set({ name, value: "", ...options }); } catch { /* Server Component */ }
         },
       },
     }
