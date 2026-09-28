@@ -77,10 +77,41 @@ class UnlockResponse(BaseModel):
     credits_remaining: int
 
 
+# ── Resume Storage ────────────────────────────────────────────────────────────
+
+class ResumeUploadResponse(BaseModel):
+    path: str
+    filename: str
+    signed_url: str
+
+
+class ResumeMetadata(BaseModel):
+    path: str
+    filename: str
+    signed_url: str
+
+
+# ── Credit Orders ─────────────────────────────────────────────────────────────
+
+class CreditOrder(BaseModel):
+    id: str
+    package: str
+    credits: int
+    amount_usd_cents: int
+    status: Literal["pending", "completed", "failed"]
+    created_at: datetime
+
+
+class CreditOrdersResponse(BaseModel):
+    orders: list[CreditOrder]
+
+
 # ── User ──────────────────────────────────────────────────────────────────────
 
 class UserProfile(BaseModel):
     id: str
     email: str
     credits_balance: int
+    resume_path: Optional[str] = None
+    resume_filename: Optional[str] = None
     created_at: datetime

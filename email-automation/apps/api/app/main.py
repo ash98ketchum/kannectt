@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.routers import emails, credits, directory, webhooks
+from app.routers import emails, credits, directory, webhooks, profile
 
 
 @asynccontextmanager
@@ -32,6 +32,7 @@ app.include_router(emails.router,    prefix="/api/send",      tags=["Send"])
 app.include_router(credits.router,   prefix="/api/credits",   tags=["Credits"])
 app.include_router(directory.router, prefix="/api/directory", tags=["Directory"])
 app.include_router(webhooks.router,  prefix="/api/webhooks",  tags=["Webhooks"])
+app.include_router(profile.router,   prefix="/api/profile",   tags=["Profile"])
 
 
 @app.get("/health")
