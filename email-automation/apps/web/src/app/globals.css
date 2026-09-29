@@ -3,11 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --cream: #D4C5A9;
-    --ink:   #0A0905;
-  }
-
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -21,4 +16,39 @@
 
   /* Selection */
   ::selection { background: #D4C5A920; color: #D4C5A9; }
+}
+
+/* ─── Animated ambient orbs (applied to inner app pages) ─────────────────── */
+.ambient-bg {
+  position: relative;
+}
+.ambient-bg::before,
+.ambient-bg::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.ambient-bg::before {
+  width: 600px; height: 500px;
+  top: -100px; left: -150px;
+  background: radial-gradient(circle, rgba(212,197,169,0.055) 0%, transparent 70%);
+  animation-duration: 22s;
+}
+.ambient-bg::after {
+  width: 500px; height: 400px;
+  bottom: 0; right: -100px;
+  background: radial-gradient(circle, rgba(184,158,130,0.04) 0%, transparent 70%);
+  animation-duration: 16s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes drift {
+  0%   { transform: translate(0, 0)     scale(1);    }
+  33%  { transform: translate(60px, 40px) scale(1.05); }
+  66%  { transform: translate(-40px, 70px) scale(0.97); }
+  100% { transform: translate(30px, -50px) scale(1.03); }
 }

@@ -40,8 +40,8 @@ export default function ReferralPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Refer &amp; Earn</h1>
-        <p className="text-neutral-400 text-sm mt-1">Share your link — earn 50 credits for every friend who signs up</p>
+        <h1 className="font-display text-4xl font-light text-cream-200 tracking-tight">Refer &amp; Earn</h1>
+        <p className="text-cream-300/55 text-sm mt-1">Share your link — earn 50 credits for every friend who signs up</p>
       </div>
 
       {/* How it works */}
@@ -51,63 +51,63 @@ export default function ReferralPage() {
           { icon: Users, title: "Friend signs up",    desc: "They create a real account using your link" },
           { icon: Zap,   title: "You earn 50 credits", desc: "Credited to your account automatically" },
         ].map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="border border-neutral-800 rounded-xl p-4 flex flex-col gap-3">
-            <div className="w-8 h-8 rounded-lg bg-yellow-950 border border-yellow-900 flex items-center justify-center">
-              <Icon size={14} className="text-yellow-400" />
+          <div key={title} className="border border-cream-300/[0.08] rounded-xl p-4 flex flex-col gap-3">
+            <div className="w-8 h-8 rounded-lg bg-cream-300/[0.06] border border-cream-300/20 flex items-center justify-center">
+              <Icon size={14} className="text-cream-300" />
             </div>
             <p className="text-sm font-medium">{title}</p>
-            <p className="text-xs text-neutral-500">{desc}</p>
+            <p className="text-xs text-cream-300/40">{desc}</p>
           </div>
         ))}
       </div>
 
       {/* Your referral link */}
-      <div className="border border-neutral-800 rounded-xl p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-neutral-300">Your referral link</h2>
+      <div className="border border-cream-300/[0.08] rounded-xl p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-cream-200">Your referral link</h2>
         {loading ? (
-          <div className="flex items-center gap-2 text-neutral-500 text-sm">
+          <div className="flex items-center gap-2 text-cream-300/40 text-sm">
             <Loader2 size={14} className="animate-spin" /> Loading…
           </div>
         ) : stats ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-sm font-mono text-neutral-400 truncate">
+              <div className="flex-1 bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2.5 text-sm font-mono text-cream-300/55 truncate">
                 {stats.referral_url}
               </div>
               <button
                 onClick={copyLink}
-                className="shrink-0 flex items-center gap-1.5 bg-white text-black px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-neutral-100 transition"
+                className="shrink-0 flex items-center gap-1.5 bg-cream-300 text-[#0A0905] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-cream-200 transition"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <p className="text-xs text-neutral-600">
-              Code: <span className="font-mono text-neutral-400">{stats.referral_code}</span>
+            <p className="text-xs text-cream-300/30">
+              Code: <span className="font-mono text-cream-300/55">{stats.referral_code}</span>
             </p>
           </>
         ) : (
-          <p className="text-sm text-neutral-500">Could not load referral link. Try refreshing.</p>
+          <p className="text-sm text-cream-300/40">Could not load referral link. Try refreshing.</p>
         )}
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 gap-4">
-          <div className="border border-neutral-800 rounded-xl p-5">
-            <p className="text-xs text-neutral-500">Friends referred</p>
+          <div className="border border-cream-300/[0.08] rounded-xl p-5">
+            <p className="text-xs text-cream-300/40">Friends referred</p>
             <p className="text-3xl font-bold mt-1">{stats.total_referrals}</p>
           </div>
-          <div className="border border-neutral-800 rounded-xl p-5">
-            <p className="text-xs text-neutral-500">Credits earned from referrals</p>
-            <p className="text-3xl font-bold mt-1 text-yellow-400">+{stats.credits_earned}</p>
+          <div className="border border-cream-300/[0.08] rounded-xl p-5">
+            <p className="text-xs text-cream-300/40">Credits earned from referrals</p>
+            <p className="text-3xl font-bold mt-1 text-cream-300">+{stats.credits_earned}</p>
           </div>
         </div>
       )}
 
       {/* Rules */}
-      <div className="border border-neutral-800 rounded-xl p-5 space-y-3">
-        <h3 className="text-sm font-medium text-neutral-400">Rules</h3>
+      <div className="border border-cream-300/[0.08] rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-medium text-cream-300/55">Rules</h3>
         <ul className="space-y-2">
           {[
             "Your friend must sign up with a real, non-disposable email address",
@@ -116,8 +116,8 @@ export default function ReferralPage() {
             "You cannot refer yourself",
             "Credits are added instantly when your friend verifies their email",
           ].map(rule => (
-            <li key={rule} className="flex items-start gap-2 text-xs text-neutral-500">
-              <Check size={11} className="text-neutral-600 mt-0.5 shrink-0" />
+            <li key={rule} className="flex items-start gap-2 text-xs text-cream-300/40">
+              <Check size={11} className="text-cream-300/30 mt-0.5 shrink-0" />
               {rule}
             </li>
           ))}

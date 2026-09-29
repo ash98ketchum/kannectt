@@ -171,12 +171,12 @@ export default function SendPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Send Emails</h1>
-          <p className="text-neutral-400 text-sm mt-1">Upload resume · add targets · preview · send.</p>
+          <p className="text-cream-300/55 text-sm mt-1">Upload resume · add targets · preview · send.</p>
         </div>
         {balance !== null && (
           <div className="text-right">
             <p className="text-2xl font-bold">{balance}</p>
-            <p className="text-xs text-neutral-500">credits</p>
+            <p className="text-xs text-cream-300/40">credits</p>
           </div>
         )}
       </div>
@@ -200,7 +200,7 @@ export default function SendPage() {
 
             {savedResume ? (
               /* Saved resume card */
-              <div className="flex items-center gap-3 border border-green-800 bg-green-950/20 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-3 border border-green-800 bg-green-900/20/20 rounded-xl px-4 py-3">
                 <FileText size={16} className="text-green-400 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-green-300 font-medium truncate">{savedResume.filename}</p>
@@ -211,7 +211,7 @@ export default function SendPage() {
                   Preview
                 </a>
                 <button onClick={removeResume}
-                  className="text-neutral-600 hover:text-red-400 transition ml-1">
+                  className="text-cream-300/30 hover:text-red-400 transition ml-1">
                   <X size={14} />
                 </button>
               </div>
@@ -224,7 +224,7 @@ export default function SendPage() {
                   onClick={() => fileRef.current?.click()}
                   className={cn(
                     "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition",
-                    newResumeFile ? "border-blue-800 bg-blue-950/20" : "border-neutral-800 hover:border-neutral-600"
+                    newResumeFile ? "border-blue-800 bg-blue-950/20" : "border-cream-300/[0.08] hover:border-neutral-600"
                   )}
                 >
                   {newResumeFile ? (
@@ -233,8 +233,8 @@ export default function SendPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2">
-                      <Upload size={20} className="text-neutral-600" />
-                      <p className="text-sm text-neutral-500">Drop PDF or click to browse</p>
+                      <Upload size={20} className="text-cream-300/30" />
+                      <p className="text-sm text-cream-300/40">Drop PDF or click to browse</p>
                       <p className="text-xs text-neutral-700">Save once · reuse in every send</p>
                     </div>
                   )}
@@ -244,13 +244,13 @@ export default function SendPage() {
                     <button
                       onClick={saveResume}
                       disabled={uploadingResume}
-                      className="flex items-center gap-2 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-1.5 rounded-lg transition disabled:opacity-40"
+                      className="flex items-center gap-2 text-xs bg-[#1A1915] hover:bg-neutral-700 border border-cream-300/[0.12] px-3 py-1.5 rounded-lg transition disabled:opacity-40"
                     >
                       {uploadingResume
                         ? <><Loader2 size={12} className="animate-spin" /> Saving…</>
                         : <><Check size={12} /> Save resume</>}
                     </button>
-                    <span className="text-xs text-neutral-600">or it will be attached once without saving</span>
+                    <span className="text-xs text-cream-300/30">or it will be attached once without saving</span>
                   </div>
                 )}
                 {resumeError && <p className="text-xs text-red-400">{resumeError}</p>}
@@ -261,17 +261,17 @@ export default function SendPage() {
           {/* Template */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Email template</label>
-            <p className="text-xs text-neutral-600">
+            <p className="text-xs text-cream-300/30">
               Placeholders:{" "}
               {["{{RECRUITER_NAME}}", "{{COMPANY_NAME}}", "{{COMPANY_HIGHLIGHT}}"].map(p => (
-                <code key={p} className="text-neutral-500 mr-2">{p}</code>
+                <code key={p} className="text-cream-300/40 mr-2">{p}</code>
               ))}
             </p>
             <textarea
               value={template}
               onChange={e => setTemplate(e.target.value)}
               rows={8}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-sm text-neutral-300 focus:outline-none focus:border-neutral-500 font-mono resize-y"
+              className="w-full bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2.5 text-sm text-cream-200 focus:outline-none focus:border-neutral-500 font-mono resize-y"
             />
           </div>
 
@@ -283,47 +283,47 @@ export default function SendPage() {
                 value={newMail} onChange={e => setNewMail(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addTarget()}
                 placeholder="recruiter@company.com"
-                className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
+                className="flex-1 bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2 text-sm placeholder:text-cream-300/30 focus:outline-none focus:border-neutral-500"
               />
               <input
                 value={newCompany} onChange={e => setNewCompany(e.target.value)}
                 placeholder="Company name"
-                className="w-36 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500"
+                className="w-36 bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2 text-sm placeholder:text-cream-300/30 focus:outline-none focus:border-neutral-500"
               />
               <select
                 value={newType} onChange={e => setNewType(e.target.value as "recruiter" | "careers")}
-                className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-500"
+                className="bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-500"
               >
                 <option value="recruiter">Recruiter</option>
                 <option value="careers">Careers</option>
               </select>
               <button onClick={addTarget}
-                className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg px-3 py-2 transition">
+                className="bg-[#1A1915] hover:bg-neutral-700 border border-cream-300/[0.12] rounded-lg px-3 py-2 transition">
                 <Plus size={16} />
               </button>
             </div>
 
             {targets.length > 0 && (
-              <div className="border border-neutral-800 rounded-xl overflow-hidden">
+              <div className="border border-cream-300/[0.08] rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-800 bg-neutral-900/50">
-                      <th className="text-left px-4 py-2.5 text-xs text-neutral-500 font-medium">Email</th>
-                      <th className="text-left px-4 py-2.5 text-xs text-neutral-500 font-medium">Company</th>
-                      <th className="text-left px-4 py-2.5 text-xs text-neutral-500 font-medium">Type</th>
+                    <tr className="border-b border-cream-300/[0.08] bg-cream-300/[0.02]">
+                      <th className="text-left px-4 py-2.5 text-xs text-cream-300/40 font-medium">Email</th>
+                      <th className="text-left px-4 py-2.5 text-xs text-cream-300/40 font-medium">Company</th>
+                      <th className="text-left px-4 py-2.5 text-xs text-cream-300/40 font-medium">Type</th>
                       <th className="px-4 py-2.5" />
                     </tr>
                   </thead>
                   <tbody>
                     {targets.map(t => (
-                      <tr key={t.id} className="border-b border-neutral-800/50 last:border-0">
-                        <td className="px-4 py-2.5 font-mono text-xs text-neutral-300">{t.mail}</td>
-                        <td className="px-4 py-2.5 text-neutral-400">{t.company}</td>
+                      <tr key={t.id} className="border-b border-cream-300/[0.08]/50 last:border-0">
+                        <td className="px-4 py-2.5 font-mono text-xs text-cream-200">{t.mail}</td>
+                        <td className="px-4 py-2.5 text-cream-300/55">{t.company}</td>
                         <td className="px-4 py-2.5">
-                          <span className="text-xs border border-neutral-700 rounded px-2 py-0.5 text-neutral-400">{t.type}</span>
+                          <span className="text-xs border border-cream-300/[0.12] rounded px-2 py-0.5 text-cream-300/55">{t.type}</span>
                         </td>
                         <td className="px-4 py-2.5 text-right">
-                          <button onClick={() => removeTarget(t.id)} className="text-neutral-600 hover:text-red-400 transition">
+                          <button onClick={() => removeTarget(t.id)} className="text-cream-300/30 hover:text-red-400 transition">
                             <Trash2 size={13} />
                           </button>
                         </td>
@@ -338,13 +338,13 @@ export default function SendPage() {
           {targets.length > 0 && (
             <div className="flex items-center gap-3 pt-2">
               <button onClick={dryRun} disabled={loading}
-                className="flex items-center gap-2 border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition disabled:opacity-40">
+                className="flex items-center gap-2 border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition disabled:opacity-40">
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
                 {loading ? "Generating previews…" : "Preview emails"}
               </button>
               <span className={cn(
                 "text-xs",
-                !hasEnough && balance !== null ? "text-yellow-500" : "text-neutral-500"
+                !hasEnough && balance !== null ? "text-yellow-500" : "text-cream-300/40"
               )}>
                 {targets.length} email{targets.length > 1 ? "s" : ""} · {creditCost} credits
                 {!hasResume && " · no resume attached"}
@@ -359,25 +359,25 @@ export default function SendPage() {
       {step === "preview" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-neutral-400">{previews.length} email{previews.length > 1 ? "s" : ""} ready</p>
-            <button onClick={() => setStep("form")} className="text-xs text-neutral-500 hover:text-neutral-300 underline">
+            <p className="text-sm text-cream-300/55">{previews.length} email{previews.length > 1 ? "s" : ""} ready</p>
+            <button onClick={() => setStep("form")} className="text-xs text-cream-300/40 hover:text-cream-200 underline">
               Edit targets
             </button>
           </div>
 
           {previews.map((p, i) => (
-            <div key={i} className="border border-neutral-800 rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-neutral-800 bg-neutral-900/50 flex items-center justify-between">
+            <div key={i} className="border border-cream-300/[0.08] rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-cream-300/[0.08] bg-cream-300/[0.02] flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-neutral-500">To</p>
-                  <p className="text-sm font-mono text-neutral-300">{p.to}</p>
+                  <p className="text-xs text-cream-300/40">To</p>
+                  <p className="text-sm font-mono text-cream-200">{p.to}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-neutral-500">Subject</p>
-                  <p className="text-sm text-neutral-300">{p.subject}</p>
+                  <p className="text-xs text-cream-300/40">Subject</p>
+                  <p className="text-sm text-cream-200">{p.subject}</p>
                 </div>
               </div>
-              <pre className="px-4 py-4 text-xs text-neutral-400 whitespace-pre-wrap font-sans leading-relaxed">{p.body}</pre>
+              <pre className="px-4 py-4 text-xs text-cream-300/55 whitespace-pre-wrap font-sans leading-relaxed">{p.body}</pre>
             </div>
           ))}
 
@@ -385,7 +385,7 @@ export default function SendPage() {
             <button
               onClick={executeSend}
               disabled={sending || !hasEnough}
-              className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-neutral-200 transition disabled:opacity-40"
+              className="flex items-center gap-2 bg-cream-300 text-[#0A0905] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-cream-200 transition disabled:opacity-40"
             >
               {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
               {sending ? "Sending…" : `Send all · ${creditCost} credits`}
@@ -394,7 +394,7 @@ export default function SendPage() {
               <a href="/credits" className="text-xs text-yellow-400 underline">Need more credits</a>
             )}
             {hasResume && (
-              <p className="text-xs text-neutral-600 flex items-center gap-1">
+              <p className="text-xs text-cream-300/30 flex items-center gap-1">
                 <FileText size={11} />
                 {savedResume?.filename ?? newResumeFile?.name} will be attached
               </p>
@@ -411,11 +411,11 @@ export default function SendPage() {
           </h2>
           <div className="space-y-2">
             {previews.map((p, i) => (
-              <div key={i} className="flex items-center gap-3 border border-neutral-800 rounded-lg px-4 py-3 text-sm">
+              <div key={i} className="flex items-center gap-3 border border-cream-300/[0.08] rounded-lg px-4 py-3 text-sm">
                 <span className={cn("w-2 h-2 rounded-full shrink-0",
                   p.status === "sent" ? "bg-green-500" : "bg-red-500")} />
-                <span className="font-mono text-neutral-300 truncate">{p.to}</span>
-                <span className="ml-auto text-neutral-500 text-xs truncate max-w-xs">{p.subject}</span>
+                <span className="font-mono text-cream-200 truncate">{p.to}</span>
+                <span className="ml-auto text-cream-300/40 text-xs truncate max-w-xs">{p.subject}</span>
                 <span className={cn("text-xs shrink-0", p.status === "sent" ? "text-green-400" : "text-red-400")}>
                   {p.status}
                 </span>
@@ -424,7 +424,7 @@ export default function SendPage() {
           </div>
           <button
             onClick={() => { setStep("form"); setTargets([]); setPreviews([]); setError(null); }}
-            className="border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition"
+            className="border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition"
           >
             Send another batch
           </button>

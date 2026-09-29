@@ -60,9 +60,9 @@ export default function SettingsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Gmail Settings</h1>
-        <p className="text-neutral-400 text-sm mt-1">
-          Connect your Gmail so emails are sent from <strong className="text-white">your own address</strong> — not ours.
+        <h1 className="font-display text-4xl font-light text-cream-200 tracking-tight">Gmail Settings</h1>
+        <p className="text-cream-300/55 text-sm mt-1">
+          Connect your Gmail so emails are sent from <strong className="text-cream-200">your own address</strong> — not ours.
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export default function SettingsPage() {
       {!loading && (
         <div className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm ${
           configured
-            ? "border-green-900 bg-green-950/40 text-green-400"
+            ? "border-green-800/40 bg-green-900/20/40 text-green-400"
             : "border-yellow-900 bg-yellow-950/40 text-yellow-400"
         }`}>
           {configured
@@ -84,23 +84,23 @@ export default function SettingsPage() {
       <form onSubmit={handleSave} className="space-y-5">
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-neutral-400">Your Gmail address</label>
+          <label className="text-xs font-medium text-cream-300/55">Your Gmail address</label>
           <div className="relative">
-            <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" />
+            <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-cream-300/30" />
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="you@gmail.com"
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg pl-9 pr-3 py-2.5 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 transition"
+              className="w-full bg-[#13120E] border border-cream-300/[0.12] rounded-lg pl-9 pr-3 py-2.5 text-sm placeholder:text-cream-300/30 focus:outline-none focus:border-neutral-500 transition"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-neutral-400">Gmail App Password</label>
+            <label className="text-xs font-medium text-cream-300/55">Gmail App Password</label>
             <a
               href="https://myaccount.google.com/apppasswords"
               target="_blank"
@@ -117,17 +117,17 @@ export default function SettingsPage() {
               onChange={e => setAppPw(e.target.value)}
               required={!configured}
               placeholder={configured ? "Leave blank to keep existing password" : "xxxx xxxx xxxx xxxx"}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 pr-10 text-sm font-mono placeholder:text-neutral-600 placeholder:font-sans focus:outline-none focus:border-neutral-500 transition"
+              className="w-full bg-[#13120E] border border-cream-300/[0.12] rounded-lg px-3 py-2.5 pr-10 text-sm font-mono placeholder:text-cream-300/30 placeholder:font-sans focus:outline-none focus:border-neutral-500 transition"
             />
             <button
               type="button"
               onClick={() => setShowPw(s => !s)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-300/30 hover:text-cream-300/55 transition"
             >
               {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
-          <p className="text-xs text-neutral-600 flex items-center gap-1.5">
+          <p className="text-xs text-cream-300/30 flex items-center gap-1.5">
             <Shield size={10} /> Stored encrypted — never visible after saving
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function SettingsPage() {
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-neutral-100 transition disabled:opacity-50"
+          className="flex items-center gap-2 bg-cream-300 text-[#0A0905] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-cream-200 transition disabled:opacity-50"
         >
           {saving ? <><Loader2 size={14} className="animate-spin" /> Saving…</> :
            saved  ? <><Check size={14} className="text-green-600" /> Saved!</> :
@@ -150,7 +150,7 @@ export default function SettingsPage() {
       </form>
 
       {/* How to get App Password guide */}
-      <div className="border border-neutral-800 rounded-xl p-5 space-y-3">
+      <div className="border border-cream-300/[0.08] rounded-xl p-5 space-y-3">
         <h3 className="text-sm font-medium">How to get a Gmail App Password</h3>
         <ol className="space-y-2">
           {[
@@ -160,8 +160,8 @@ export default function SettingsPage() {
             'Select app: "Mail" → Select device: "Other" → type "kannectt"',
             "Copy the 16-character password and paste it above",
           ].map((step, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-xs text-neutral-500">
-              <span className="font-mono text-neutral-600 shrink-0 mt-0.5">{i + 1}.</span>
+            <li key={i} className="flex items-start gap-2.5 text-xs text-cream-300/40">
+              <span className="font-mono text-cream-300/30 shrink-0 mt-0.5">{i + 1}.</span>
               {step}
             </li>
           ))}
