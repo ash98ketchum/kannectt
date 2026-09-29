@@ -1,11 +1,75 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from pydantic import BaseModel, EmailStr
 from app.services import storage
 from app.models.schemas import ResumeUploadResponse, ResumeMetadata
 from app.db.client import get_client
+from cryptography.fernet import Fernet
+from app.core.config import settings
 
 router = APIRouter()
 
 MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+# ── Gmail settings schemas ────────────────────────────────────────────────────
+
+class GmailSettingsRequest(BaseModel):
+    sender_email: EmailStr
+    gmail_app_password: str     # raw — encrypted before storing
+
+
+class GmailSettingsResponse(BaseModel):
+    sender_email: str
+    is_configured: bool
+
+
+def _fernet() -> Fernet:
+    return Fernet(settings.CONTACT_ENCRYPTION_KEY.encode()
+                  if isinstance(settings.CONTACT_ENCRYPTION_KEY, str)
+                  else settings.CONTACT_ENCRYPTION_KEY)
+
+
+# ── Gmail settings endpoints ──────────────────────────────────────────────────
+
+@router.post("/gmail", response_model=GmailSettingsResponse)
+async def save_gmail_settings(req: GmailSettingsRequest, user_id: str):
+    """Save user's Gmail sender email + encrypted App Password."""
+    f   = _fernet()
+    enc = f.encrypt(req.gmail_app_password.encode()).decode()
+    db  = get_client()
+    db.table("users").update({
+        "sender_email":           str(req.sender_email),
+        "gmail_app_password_enc": enc,
+    }).eq("id", user_id).execute()
+    return GmailSettingsResponse(sender_email=str(req.sender_email), is_configured=True)
+
+
+@router.get("/gmail", response_model=GmailSettingsResponse)
+async def get_gmail_settings(user_id: str):
+    """Return whether the user has configured their Gmail (never return the password)."""
+    db  = get_client()
+    row = db.table("users").select("sender_email, gmail_app_password_enc").eq("id", user_id).single().execute().data
+    return GmailSettingsResponse(
+        sender_email=row.get("sender_email") or "",
+        is_configured=bool(row.get("sender_email") and row.get("gmail_app_password_enc")),
+    )
+
+
+def get_user_gmail_credentials(user_id: str) -> tuple[str, str]:
+    """
+    Returns (sender_email, gmail_app_password) for the given user.
+    Raises HTTPException 400 if not configured.
+    """
+    db  = get_client()
+    row = db.table("users").select("sender_email, gmail_app_password_enc").eq("id", user_id).single().execute().data
+    if not row or not row.get("sender_email") or not row.get("gmail_app_password_enc"):
+        raise HTTPException(
+            status_code=400,
+            detail="Gmail not configured. Go to Profile → Gmail Settings to set up your sender email.",
+        )
+    f        = _fernet()
+    password = f.decrypt(row["gmail_app_password_enc"].encode()).decode()
+    return row["sender_email"], password
 
 
 @router.post("/resume", response_model=ResumeUploadResponse)

@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, Send, CreditCard, Gift, LogOut, Mail } from "lucide-react";
+import { LayoutDashboard, BookOpen, Send, CreditCard, Gift, LogOut, Mail, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 const NAV = [
-  { href: "/dashboard",  label: "Dashboard",  icon: LayoutDashboard },
-  { href: "/directory",  label: "Directory",  icon: BookOpen },
-  { href: "/send",       label: "Send",       icon: Send },
-  { href: "/credits",    label: "Credits",    icon: CreditCard },
+  { href: "/dashboard",  label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/directory",  label: "Directory",    icon: BookOpen },
+  { href: "/send",       label: "Send",         icon: Send },
+  { href: "/credits",    label: "Credits",      icon: CreditCard },
   { href: "/referral",   label: "Refer & Earn", icon: Gift },
+  { href: "/settings",   label: "Gmail Setup",  icon: Settings },
 ];
 
 export default function Sidebar() {
