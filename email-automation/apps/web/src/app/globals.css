@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --cream: #D4C5A9;
+    --ink:   #0A0905;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: #0A0905; }
+  ::-webkit-scrollbar-thumb  { background: #2A2820; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3D3A33; }
+
+  /* Selection */
+  ::selection { background: #D4C5A920; color: #D4C5A9; }
+}

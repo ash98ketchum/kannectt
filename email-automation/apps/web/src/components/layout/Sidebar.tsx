@@ -28,46 +28,52 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-52 shrink-0 border-r border-neutral-800 flex flex-col h-screen sticky top-0">
+    <aside className="w-56 shrink-0 border-r border-[#1E1C17] flex flex-col h-screen sticky top-0 bg-[#0D0C09]">
+
       {/* Logo */}
-      <div className="h-14 flex items-center px-5 border-b border-neutral-800 gap-2">
-        <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-          <Mail size={11} className="text-black" />
+      <div className="h-16 flex items-center px-5 border-b border-[#1E1C17]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 bg-cream-300 rounded flex items-center justify-center">
+            <Mail size={12} className="text-[#0A0905]" />
+          </div>
+          <span className="font-display text-lg text-[#E8DDD0] tracking-wide font-medium">kannectt</span>
         </div>
-        <span className="font-bold text-sm tracking-tight">kannectt</span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-3 flex flex-col gap-1">
-        {NAV.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition",
-              pathname === href
-                ? "bg-neutral-800 text-neutral-100 font-medium"
-                : "text-neutral-400 hover:text-neutral-100 hover:bg-neutral-900"
-            )}
-          >
-            <Icon size={15} />
-            {label}
-            {href === "/referral" && (
-              <span className="ml-auto text-[10px] font-bold text-yellow-400 bg-yellow-950 border border-yellow-900 px-1.5 py-0.5 rounded-full">
-                +50
-              </span>
-            )}
-          </Link>
-        ))}
+      <nav className="flex-1 p-3 flex flex-col gap-0.5 pt-4">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition",
+                active
+                  ? "bg-cream-300/10 text-cream-300 font-medium"
+                  : "text-[#6B6456] hover:text-[#E8DDD0] hover:bg-[#1A1915]"
+              )}
+            >
+              <Icon size={14} className={active ? "text-cream-300" : ""} />
+              {label}
+              {href === "/referral" && (
+                <span className="ml-auto text-[9px] font-bold text-cream-300 bg-cream-300/10 border border-cream-300/20 px-1.5 py-0.5 rounded-full">
+                  +50
+                </span>
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-neutral-800">
+      <div className="p-3 border-t border-[#1E1C17]">
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-neutral-400 hover:text-neutral-100 hover:bg-neutral-900 transition"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#3D3A33] hover:text-[#E8DDD0] hover:bg-[#1A1915] transition"
         >
-          <LogOut size={15} />
+          <LogOut size={14} />
           Sign out
         </button>
       </div>

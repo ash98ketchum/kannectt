@@ -1,11 +1,15 @@
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-neutral-950">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <span className="font-bold text-lg tracking-tight">ReachOut</span>
-          <p className="text-neutral-500 text-xs mt-1">by Kannectt</p>
+    <div className="min-h-screen flex items-center justify-center px-6 bg-[#0A0905]">
+      <div className="w-full max-w-md">
+
+        {/* Wordmark */}
+        <div className="mb-10">
+          <span className="font-display text-cream-300 text-sm tracking-[0.25em] uppercase font-medium">
+            kannectt
+          </span>
         </div>
+
         {children}
       </div>
     </div>
