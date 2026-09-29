@@ -39,8 +39,8 @@ export default function DirectoryPage() {
       if (deptFilter && deptFilter !== "All") params.dept = deptFilter;
       const data = await api.directory.list(uid, params) as ContactPublic[];
       setContacts(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load contacts");
+    } catch {
+      setError("Could not load contacts — the backend may be starting up. Try again in 30 seconds.");
     } finally {
       setLoading(false);
     }
@@ -74,8 +74,8 @@ export default function DirectoryPage() {
       }));
       setBalance(res.credits_remaining);
       setCart([]);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Unlock failed");
+    } catch {
+      setError("Unlock failed — check your credits or try again.");
     } finally {
       setUnlocking(false);
     }

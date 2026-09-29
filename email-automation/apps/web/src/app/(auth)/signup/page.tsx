@@ -148,44 +148,57 @@ function SignupForm() {
 
   if (done) {
     return (
-      <div className="text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-green-950 border border-green-800 flex items-center justify-center mx-auto">
-          <Check size={20} className="text-green-400" />
+      <div className="space-y-8">
+        <div>
+          <div className="w-12 h-12 rounded-full bg-cream-300/10 border border-cream-300/20 flex items-center justify-center mb-6">
+            <Check size={20} className="text-cream-300" />
+          </div>
+          <h2 className="font-display text-4xl font-light text-[#E8DDD0] tracking-tight">Check your email.</h2>
+          <p className="text-[#6B6456] text-sm mt-3 leading-relaxed">
+            We sent a confirmation link to <strong className="text-cream-300">{email}</strong>.
+            Click it to activate your account and unlock your{" "}
+            <strong className="text-cream-300">300 free credits</strong>.
+          </p>
         </div>
-        <h2 className="text-lg font-semibold">Check your email</h2>
-        <p className="text-neutral-400 text-sm">
-          We sent a confirmation link to <strong className="text-neutral-200">{email}</strong>.
-          Click it to activate your account and claim your <strong className="text-white">300 free credits</strong>.
-        </p>
         {refCode && (
-          <p className="text-xs text-yellow-400 bg-yellow-950/40 border border-yellow-900 rounded-lg px-3 py-2">
-            🎁 Referral code applied — your friend gets 50 bonus credits when you verify!
+          <p className="text-xs text-cream-400/70 bg-cream-300/5 border border-cream-300/10 rounded-xl px-4 py-3">
+            🎁 Referral code applied — your friend earns 50 bonus credits when you verify.
           </p>
         )}
-        <Link href="/login" className="text-xs text-neutral-500 hover:text-neutral-300 transition underline">
-          Back to login
+        <Link href="/login" className="text-xs text-[#3D3A33] hover:text-cream-300 transition">
+          ← Back to login
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-1">
-        <h1 className="text-xl font-semibold">Create your account</h1>
-        <p className="text-neutral-400 text-sm">Start free — <strong className="text-white">300 credits</strong> included, no card needed</p>
+    <div className="space-y-10">
+
+      {/* Heading */}
+      <div>
+        <h1 className="font-display text-5xl font-light text-[#E8DDD0] leading-[1.1] tracking-tight">
+          {refCode ? "You were invited." : "Create your account."}
+        </h1>
+        <p className="text-[#6B6456] text-sm mt-3 tracking-wide">
+          300 free credits included — no card needed
+        </p>
       </div>
 
       {refCode && (
-        <div className="flex items-center gap-2 border border-yellow-900 bg-yellow-950/40 rounded-lg px-3 py-2.5 text-xs text-yellow-300">
-          <Gift size={13} className="shrink-0" />
-          Referral code <strong className="font-mono">{refCode}</strong> applied — you&apos;ll start with 300 credits!
+        <div className="flex items-center gap-2.5 border border-cream-300/20 bg-cream-300/5 rounded-xl px-4 py-3 text-xs text-cream-300/80">
+          <Gift size={13} className="shrink-0 text-cream-300" />
+          Referral code <strong className="font-mono">{refCode}</strong> applied ✓
         </div>
       )}
 
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-neutral-400">Email</label>
+      <form onSubmit={handleSignup} className="space-y-6">
+
+        {/* Email */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-semibold text-[#6B6456] tracking-[0.2em] uppercase block">
+            Email
+          </label>
           <input
             type="email"
             value={email}
@@ -193,12 +206,15 @@ function SignupForm() {
             required
             autoFocus
             placeholder="you@gmail.com"
-            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 transition"
+            className="w-full bg-[#13120E] border border-[#2A2820] rounded-xl px-4 py-3.5 text-sm text-[#E8DDD0] placeholder:text-[#3D3A33] focus:outline-none focus:border-[#6B6456] transition"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-neutral-400">Password</label>
+        {/* Password */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-semibold text-[#6B6456] tracking-[0.2em] uppercase block">
+            Password
+          </label>
           <div className="relative">
             <input
               type={showPw ? "text" : "password"}
@@ -207,21 +223,21 @@ function SignupForm() {
               required
               minLength={8}
               placeholder="••••••••"
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2.5 pr-10 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 transition"
+              className="w-full bg-[#13120E] border border-[#2A2820] rounded-xl px-4 py-3.5 pr-12 text-sm text-[#E8DDD0] placeholder:text-[#3D3A33] focus:outline-none focus:border-[#6B6456] transition"
             />
             <button
               type="button"
               onClick={() => setShowPw(s => !s)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3D3A33] hover:text-[#6B6456] transition"
             >
-              {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
           {password && (
-            <div className="space-y-1 pt-1">
+            <div className="flex gap-4 pt-1">
               {STRENGTH.map(({ label, test }) => (
-                <p key={label} className={`text-xs flex items-center gap-1.5 transition ${test(password) ? "text-green-400" : "text-neutral-600"}`}>
-                  <Check size={10} className={test(password) ? "opacity-100" : "opacity-0"} />
+                <p key={label} className={`text-[10px] flex items-center gap-1 transition ${test(password) ? "text-cream-400" : "text-[#3D3A33]"}`}>
+                  <Check size={9} className={test(password) ? "opacity-100" : "opacity-0"} />
                   {label}
                 </p>
               ))}
@@ -230,7 +246,7 @@ function SignupForm() {
         </div>
 
         {error && (
-          <p className="text-xs text-red-400 bg-red-950/50 border border-red-900 rounded-lg px-3 py-2">
+          <p className="text-xs text-red-400/80 bg-red-950/30 border border-red-900/40 rounded-xl px-4 py-3">
             {error}
           </p>
         )}
@@ -238,16 +254,18 @@ function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-white text-black py-2.5 rounded-lg text-sm font-semibold hover:bg-neutral-200 transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-cream-300 text-[#0A0905] py-4 rounded-2xl text-sm font-semibold hover:bg-cream-200 transition disabled:opacity-50 flex items-center justify-center gap-2 tracking-wide"
         >
           {loading && <Loader2 size={14} className="animate-spin" />}
-          {loading ? "Creating account..." : "Create account — free"}
+          {loading ? "Creating account…" : "Create account — free"}
         </button>
       </form>
 
-      <p className="text-center text-xs text-neutral-500">
+      <p className="text-[#3D3A33] text-xs tracking-wide">
         Already have an account?{" "}
-        <Link href="/login" className="text-neutral-300 hover:text-white transition underline">Sign in</Link>
+        <Link href="/login" className="text-cream-300 hover:text-cream-200 transition">
+          Sign in
+        </Link>
       </p>
     </div>
   );

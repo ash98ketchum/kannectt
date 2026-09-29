@@ -83,11 +83,19 @@ export default function CreditsPage() {
         userId,
       ) as { order_id: string; amount: number; currency: string };
 
-      /* Step 2 — Open Razorpay checkout modal */
+      /* Step 2 — Wait for Razorpay script (max 5 s) then open modal */
       const rzpKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      if (!rzpKey || !window.Razorpay) {
-        throw new Error("Razorpay not loaded yet — please wait a moment and try again.");
-      }
+      if (!rzpKey) throw new Error("Razorpay key not configured.");
+
+      // Poll until window.Razorpay is available (script loads async)
+      await new Promise<void>((resolve, reject) => {
+        if (window.Razorpay) return resolve();
+        let tries = 0;
+        const id = setInterval(() => {
+          if (window.Razorpay) { clearInterval(id); resolve(); }
+          else if (++tries > 50) { clearInterval(id); reject(new Error("Razorpay script failed to load. Check your internet connection.")); }
+        }, 100);
+      });
 
       const rzp = new window.Razorpay({
         key:         rzpKey,
@@ -185,8 +193,11 @@ export default function CreditsPage() {
   /* ── Render ──────────────────────────────────────────────────────────── */
   return (
     <>
-      {/* Load Razorpay checkout.js once */}
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      {/* Load Razorpay checkout.js — afterInteractive ensures it loads before user clicks */}
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+      />
 
       <div className="space-y-10">
 
