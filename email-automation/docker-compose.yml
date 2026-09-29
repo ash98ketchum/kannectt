@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # ── FastAPI backend ──────────────────────────────────────────────────────────
   api:
     build:
       context: ./apps/api
@@ -11,7 +12,13 @@ services:
     volumes:
       - ./apps/api:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ── Next.js frontend ─────────────────────────────────────────────────────────
   web:
     image: node:20-alpine
     working_dir: /app
@@ -24,4 +31,38 @@ services:
       - /app/node_modules
     command: sh -c "npm install && npm run dev"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+
+  # ── Stripe CLI — webhook forwarding ─────────────────────────────────────────
+  #
+  # Forwards Stripe events to the local API so you can test the full
+  # payment loop (checkout → webhook → credit top-up) without deploying.
+  #
+  # Setup:
+  #   1. First run: docker compose run --rm stripe-cli stripe login
+  #      (opens browser to authenticate — stores token in the volume)
+  #   2. Then: docker compose up
+  #
+  # The webhook signing secret is printed to the container logs:
+  #   docker compose logs stripe-cli
+  # Copy the `whsec_...` value into apps/api/.env as STRIPE_WEBHOOK_SECRET
+  #
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    command: >
+      listen
+      --forward-to http://api:8000/api/webhooks/stripe
+      --events checkout.session.completed,checkout.session.expired,payment_intent.succeeded,payment_intent.payment_failed
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}   # read from shell env or .env
+    volumes:
+      - stripe-config:/root/.config/stripe   # persist auth token
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - stripe   # only starts when: docker compose --profile stripe up
+
+volumes:
+  stripe-config:

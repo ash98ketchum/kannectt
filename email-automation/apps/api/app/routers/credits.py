@@ -1,12 +1,12 @@
+import razorpay
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import (
-    CreditBalance, CheckoutRequest, CheckoutResponse,
+    CreditBalance, CreateOrderRequest, CreateOrderResponse,
     CreditOrdersResponse, CreditOrder,
 )
 from app.services.credit import get_balance
 from app.db.client import get_client
 from app.core.config import settings
-import stripe
 
 router = APIRouter()
 
@@ -16,11 +16,18 @@ PACKAGES = {
     "power":   150,
 }
 
+# Prices in paise (INR) — ₹20 / ₹50 / ₹100
 PRICES = {
-    "starter": 200,   # cents  ($2)
-    "pro":     500,   # cents  ($5)
-    "power":   1000,  # cents  ($10)
+    "starter": 2000,    # ₹20  (2000 paise)
+    "pro":     5000,    # ₹50  (5000 paise)
+    "power":   10000,   # ₹100 (10000 paise)
 }
+
+
+def _razorpay_client() -> razorpay.Client:
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        raise HTTPException(status_code=503, detail="Payments not configured")
+    return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 
 @router.get("/balance/{user_id}", response_model=CreditBalance)
@@ -29,50 +36,50 @@ async def balance(user_id: str):
     return CreditBalance(balance=bal)
 
 
-@router.post("/checkout", response_model=CheckoutResponse)
-async def checkout(req: CheckoutRequest, user_id: str):
-    if not settings.STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=503, detail="Payments not configured")
+@router.post("/create-order", response_model=CreateOrderResponse)
+async def create_order(req: CreateOrderRequest, user_id: str):
+    """
+    Step 1 of Razorpay Standard Checkout.
+    Creates a Razorpay order and a pending credit_orders row.
+    Returns order_id, amount, and currency for the frontend modal.
+    """
+    if req.package not in PACKAGES:
+        raise HTTPException(status_code=400, detail=f"Unknown package '{req.package}'")
 
     credits = PACKAGES[req.package]
-    price   = PRICES[req.package]
+    amount  = PRICES[req.package]   # in paise, minimum is 100
 
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[{
-            "price_data": {
-                "currency": "usd",
-                "product_data": {
-                    "name":        f"kannectt {req.package.capitalize()} — {credits} credits",
-                    "description": "Send personalised outreach emails and unlock recruiter contacts",
-                },
-                "unit_amount": price,
+    client = _razorpay_client()
+    try:
+        order = client.order.create({
+            "amount":   amount,
+            "currency": "INR",
+            "receipt":  f"kannectt_{req.package}_{user_id[:8]}",
+            "notes": {
+                "user_id": user_id,
+                "package": req.package,
+                "credits": str(credits),
             },
-            "quantity": 1,
-        }],
-        mode="payment",
-        success_url=req.success_url,
-        cancel_url=req.cancel_url,
-        metadata={
-            "user_id":  user_id,
-            "package":  req.package,
-            "credits":  credits,
-        },
-    )
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Razorpay error: {e}")
 
-    # Create a pending order so users can see their purchase history immediately
+    # Persist a pending order immediately so history is visible right away
     db = get_client()
     db.table("credit_orders").insert({
-        "user_id":           user_id,
-        "stripe_session_id": session.id,
-        "package":           req.package,
-        "credits":           credits,
-        "amount_usd_cents":  price,
-        "status":            "pending",
+        "user_id":             user_id,
+        "razorpay_order_id":   order["id"],
+        "package":             req.package,
+        "credits":             credits,
+        "amount_inr_paise":    amount,
+        "status":              "pending",
     }).execute()
 
-    return CheckoutResponse(checkout_url=session.url)
+    return CreateOrderResponse(
+        order_id=order["id"],
+        amount=amount,
+        currency="INR",
+    )
 
 
 @router.get("/orders/{user_id}", response_model=CreditOrdersResponse)
@@ -81,7 +88,7 @@ async def order_history(user_id: str):
     db = get_client()
     rows = (
         db.table("credit_orders")
-        .select("id, package, credits, amount_usd_cents, status, created_at")
+        .select("id, package, credits, amount_inr_paise, status, created_at")
         .eq("user_id", user_id)
         .order("created_at", desc=True)
         .limit(20)

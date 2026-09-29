@@ -33,7 +33,7 @@ export type CreditOrder = {
   id: string;
   package: string;
   credits: number;
-  amount_usd_cents: number;
+  amount_inr_paise: number;
   status: "pending" | "completed" | "failed";
   created_at: string;
 };
