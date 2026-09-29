@@ -16,11 +16,11 @@ PACKAGES = {
     "power":   150,
 }
 
-# Prices in paise (INR) — ₹2 / ₹5 / ₹10
+# Prices in paise (INR) — ₹20 / ₹50 / ₹100
 PRICES = {
-    "starter": 200,    # ₹2  (200 paise)
-    "pro":     500,    # ₹5  (500 paise)
-    "power":   1000,   # ₹10 (1000 paise)
+    "starter": 2000,    # ₹20  (2000 paise)
+    "pro":     5000,    # ₹50  (5000 paise)
+    "power":   10000,   # ₹100 (10000 paise)
 }
 
 

@@ -18,9 +18,9 @@ declare global {
 
 /* ─── Package config ─────────────────────────────────────────────────────── */
 const PACKAGES = [
-  { id: "starter" as const, name: "Starter", credits: 20,  price: "₹2",  perCredit: "₹0.10",  popular: false, desc: "Try it out"    },
-  { id: "pro"     as const, name: "Pro",     credits: 60,  price: "₹5",  perCredit: "₹0.083", popular: true,  desc: "Most popular"  },
-  { id: "power"   as const, name: "Power",  credits: 150,  price: "₹10", perCredit: "₹0.067", popular: false, desc: "Best value"    },
+  { id: "starter" as const, name: "Starter", credits: 20,  price: "₹20",  perCredit: "₹1.00",  popular: false, desc: "Try it out"    },
+  { id: "pro"     as const, name: "Pro",     credits: 60,  price: "₹50",  perCredit: "₹0.83",  popular: true,  desc: "Most popular"  },
+  { id: "power"   as const, name: "Power",  credits: 150,  price: "₹100", perCredit: "₹0.67",  popular: false, desc: "Best value"    },
 ];
 
 const COST_TABLE = [
