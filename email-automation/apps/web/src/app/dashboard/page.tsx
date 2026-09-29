@@ -1,36 +1,71 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Mail, Users, CreditCard, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server";
+import { supabase } from "@/lib/supabase";
 
-async function getDashboardData() {
-  const supabase = await createClient();
+type RecentSend = {
+  id: string;
+  company: string | null;
+  to_email: string;
+  subject: string | null;
+  status: string;
+  sent_at: string;
+};
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+type DashData = {
+  email: string;
+  credits: number;
+  emailsSent: number;
+  unlocksCount: number;
+  recent: RecentSend[];
+};
 
-  // Run queries in parallel
-  const [profileRes, sendsRes, unlocksRes] = await Promise.all([
-    supabase.from("users").select("credits_balance").eq("id", user.id).single(),
-    supabase.from("email_sends").select("id, company, to_email, subject, status, sent_at")
-      .eq("user_id", user.id)
-      .order("sent_at", { ascending: false })
-      .limit(10),
-    supabase.from("user_unlocks").select("contact_id").eq("user_id", user.id),
-  ]);
+export default function DashboardPage() {
+  const [data, setData]     = useState<DashData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const sentCount = (sendsRes.data ?? []).filter(r => r.status === "sent").length;
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  return {
-    email: user.email ?? "",
-    credits: profileRes.data?.credits_balance ?? 0,
-    emailsSent: sentCount,
-    unlocksCount: unlocksRes.data?.length ?? 0,
-    recent: sendsRes.data ?? [],
-  };
-}
+      const [profileRes, sendsRes, unlocksRes] = await Promise.all([
+        supabase.from("users").select("credits_balance").eq("id", user.id).single(),
+        supabase.from("email_sends")
+          .select("id, company, to_email, subject, status, sent_at")
+          .eq("user_id", user.id)
+          .order("sent_at", { ascending: false })
+          .limit(10),
+        supabase.from("user_unlocks").select("contact_id").eq("user_id", user.id),
+      ]);
 
-export default async function DashboardPage() {
-  const data = await getDashboardData();
+      const sentCount = (sendsRes.data ?? []).filter((r) => r.status === "sent").length;
+
+      setData({
+        email:        user.email ?? "",
+        credits:      profileRes.data?.credits_balance ?? 0,
+        emailsSent:   sentCount,
+        unlocksCount: unlocksRes.data?.length ?? 0,
+        recent:       sendsRes.data ?? [],
+      });
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="h-8 w-48 bg-neutral-800 rounded-lg" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="border border-neutral-800 rounded-xl p-4 h-28 bg-neutral-900/40" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -40,14 +75,14 @@ export default async function DashboardPage() {
     );
   }
 
-  const firstName = data.email.split("@")[0].split(".")[0];
+  const firstName  = data.email.split("@")[0].split(".")[0];
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   const stats = [
-    { label: "Credits remaining", value: String(data.credits),     icon: CreditCard, note: "Buy more"        },
-    { label: "Emails sent",       value: String(data.emailsSent),  icon: Mail,        note: "All time"       },
-    { label: "Contacts unlocked", value: String(data.unlocksCount),icon: Users,       note: "From directory" },
-    { label: "Reply rate",        value: "—",                       icon: TrendingUp,  note: "Coming soon"    },
+    { label: "Credits remaining", value: String(data.credits),      icon: CreditCard, note: "Buy more"        },
+    { label: "Emails sent",       value: String(data.emailsSent),   icon: Mail,        note: "All time"       },
+    { label: "Contacts unlocked", value: String(data.unlocksCount), icon: Users,       note: "From directory" },
+    { label: "Reply rate",        value: "—",                        icon: TrendingUp,  note: "Coming soon"    },
   ];
 
   return (
