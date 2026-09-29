@@ -18,11 +18,12 @@ def build_message(
     to_email: str,
     subject: str,
     body: str,
+    sender_email: str,
     resume_bytes: bytes | None = None,
     resume_filename: str = "resume.pdf",
 ) -> MIMEMultipart:
     msg = MIMEMultipart()
-    msg["From"]    = settings.SENDER_EMAIL
+    msg["From"]    = sender_email
     msg["To"]      = to_email
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain", "utf-8"))
@@ -41,19 +42,21 @@ def send(
     to_email: str,
     subject: str,
     body: str,
+    sender_email: str,
+    gmail_app_password: str,
     resume_bytes: bytes | None = None,
     resume_filename: str = "resume.pdf",
 ) -> bool:
-    """Send email via Gmail SMTP. Returns True on success."""
-    msg = build_message(to_email, subject, body, resume_bytes, resume_filename)
+    """Send email via Gmail SMTP using the user's own credentials. Returns True on success."""
+    msg = build_message(to_email, subject, body, sender_email, resume_bytes, resume_filename)
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(settings.SENDER_EMAIL, settings.GMAIL_APP_PASSWORD)
-            server.sendmail(settings.SENDER_EMAIL, to_email, msg.as_string())
+            server.login(sender_email, gmail_app_password)
+            server.sendmail(sender_email, to_email, msg.as_string())
         log.info(f"Email sent to {to_email}")
         return True
     except smtplib.SMTPAuthenticationError:
-        log.error("Gmail authentication failed — check SENDER_EMAIL / GMAIL_APP_PASSWORD")
+        log.error(f"Gmail auth failed for {sender_email} — check App Password")
         return False
     except Exception as exc:
         log.error(f"Failed to send to {to_email}: {exc}")

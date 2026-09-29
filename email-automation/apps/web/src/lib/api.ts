@@ -73,5 +73,12 @@ export const api = {
     },
     deleteResume: (userId: string) =>
       fetch(`${API_URL}/api/profile/resume?user_id=${userId}`, { method: "DELETE" }),
+    getGmail: (userId: string) =>
+      apiFetch(`/api/profile/gmail?user_id=${userId}`),
+    saveGmail: (userId: string, body: { sender_email: string; gmail_app_password: string }) =>
+      apiFetch(`/api/profile/gmail?user_id=${userId}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
 };

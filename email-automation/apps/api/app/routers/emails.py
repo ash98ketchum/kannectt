@@ -4,6 +4,7 @@ from app.services import email_sender, llm
 from app.services.credit import deduct, get_balance
 from app.core.config import settings
 from app.db.client import get_client
+from app.routers.profile import get_user_gmail_credentials
 from datetime import datetime, timezone
 import logging
 
@@ -79,6 +80,9 @@ async def execute_send(
             detail=f"Insufficient credits: need {cost}, have {balance}",
         )
 
+    # ── Fetch user's Gmail credentials ──────────────────────────────────────
+    sender_email, gmail_password = get_user_gmail_credentials(user_id)
+
     results:      list[SendResult] = []
     credits_used: int              = 0
     db = get_client()
@@ -89,7 +93,11 @@ async def execute_send(
         status  = "failed"
         try:
             subject, body = llm.personalise(template, company, target.type)
-            ok     = email_sender.send(target.mail, subject, body, resume_bytes, resume_filename)
+            ok     = email_sender.send(
+                target.mail, subject, body,
+                sender_email, gmail_password,
+                resume_bytes, resume_filename,
+            )
             status = "sent" if ok else "failed"
             if ok:
                 credits_used += settings.CREDIT_COST_SEND
