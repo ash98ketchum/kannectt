@@ -57,10 +57,10 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-8 animate-pulse">
-        <div className="h-8 w-48 bg-neutral-800 rounded-lg" />
+        <div className="h-8 w-48 bg-[#1A1915] rounded-lg" />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="border border-neutral-800 rounded-xl p-4 h-28 bg-neutral-900/40" />
+            <div key={i} className="border border-cream-300/[0.08] rounded-xl p-4 h-28 bg-cream-300/[0.02]" />
           ))}
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="text-neutral-500 text-sm py-10 text-center">
+      <div className="text-cream-300/40 text-sm py-10 text-center">
         Unable to load dashboard data.
       </div>
     );
@@ -90,19 +90,19 @@ export default function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-neutral-400 text-sm mt-1">Welcome back, {displayName}</p>
+        <p className="text-cream-300/55 text-sm mt-1">Welcome back, {displayName}</p>
       </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, note }) => (
-          <div key={label} className="border border-neutral-800 rounded-xl p-4 flex flex-col gap-3">
+          <div key={label} className="border border-cream-300/[0.08] rounded-xl p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-neutral-500">{label}</p>
-              <Icon size={14} className="text-neutral-600" />
+              <p className="text-xs text-cream-300/40">{label}</p>
+              <Icon size={14} className="text-cream-300/30" />
             </div>
             <p className="text-3xl font-bold tracking-tight">{value}</p>
-            <p className="text-xs text-neutral-600">{note}</p>
+            <p className="text-xs text-cream-300/30">{note}</p>
           </div>
         ))}
       </div>
@@ -110,50 +110,50 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <div className="flex gap-3">
         <Link href="/send"
-          className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-neutral-200 transition">
+          className="bg-cream-300 text-[#0A0905] px-4 py-2 rounded-lg text-sm font-medium hover:bg-cream-200 transition">
           Send emails
         </Link>
         <Link href="/directory"
-          className="border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition">
+          className="border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition">
           Browse directory
         </Link>
         <Link href="/credits"
-          className="border border-neutral-700 px-4 py-2 rounded-lg text-sm hover:border-neutral-500 transition">
+          className="border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition">
           Buy credits
         </Link>
       </div>
 
       {/* Recent sends */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Recent sends</h2>
-        <div className="border border-neutral-800 rounded-xl overflow-hidden">
+        <h2 className="text-sm font-medium text-cream-300/55 uppercase tracking-wider">Recent sends</h2>
+        <div className="border border-cream-300/[0.08] rounded-xl overflow-hidden">
           {data.recent.length === 0 ? (
-            <p className="px-4 py-8 text-sm text-neutral-600 text-center">
+            <p className="px-4 py-8 text-sm text-cream-300/30 text-center">
               No emails sent yet.{" "}
-              <Link href="/send" className="underline text-neutral-400">Send your first one →</Link>
+              <Link href="/send" className="underline text-cream-300/55">Send your first one →</Link>
             </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-900/50">
-                  <th className="text-left px-4 py-3 text-xs text-neutral-500 font-medium">Company</th>
-                  <th className="text-left px-4 py-3 text-xs text-neutral-500 font-medium">Subject</th>
-                  <th className="text-left px-4 py-3 text-xs text-neutral-500 font-medium">Date</th>
-                  <th className="text-left px-4 py-3 text-xs text-neutral-500 font-medium">Status</th>
+                <tr className="border-b border-cream-300/[0.08] bg-cream-300/[0.02]">
+                  <th className="text-left px-4 py-3 text-xs text-cream-300/40 font-medium">Company</th>
+                  <th className="text-left px-4 py-3 text-xs text-cream-300/40 font-medium">Subject</th>
+                  <th className="text-left px-4 py-3 text-xs text-cream-300/40 font-medium">Date</th>
+                  <th className="text-left px-4 py-3 text-xs text-cream-300/40 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {data.recent.map((row) => (
-                  <tr key={row.id} className="border-b border-neutral-800/50 last:border-0 hover:bg-neutral-900/30 transition">
+                  <tr key={row.id} className="border-b border-cream-300/[0.08]/50 last:border-0 hover:bg-cream-300/[0.02] transition">
                     <td className="px-4 py-3 font-medium">{row.company ?? "—"}</td>
-                    <td className="px-4 py-3 text-neutral-400 max-w-xs truncate">{row.subject ?? "—"}</td>
-                    <td className="px-4 py-3 text-neutral-500">
+                    <td className="px-4 py-3 text-cream-300/55 max-w-xs truncate">{row.subject ?? "—"}</td>
+                    <td className="px-4 py-3 text-cream-300/40">
                       {new Date(row.sent_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                         row.status === "sent"
-                          ? "bg-green-950 text-green-400 border border-green-900"
+                          ? "bg-green-900/20 text-green-400 border border-green-800/40"
                           : "bg-red-950 text-red-400 border border-red-900"
                       }`}>
                         {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
