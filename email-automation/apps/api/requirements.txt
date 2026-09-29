@@ -14,7 +14,7 @@ groq>=0.9.0
 supabase>=2.0.0
 
 # Payments
-stripe>=9.0.0
+razorpay>=2.0.0
 
 # Email
 # (stdlib smtplib used — no extra package needed)

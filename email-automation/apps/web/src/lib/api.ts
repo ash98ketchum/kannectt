@@ -20,13 +20,31 @@ export const api = {
   },
   credits: {
     balance: (userId: string) => apiFetch(`/api/credits/balance/${userId}`),
-    checkout: (body: object, userId: string) =>
-      apiFetch(`/api/credits/checkout?user_id=${userId}`, {
+    createOrder: (body: object, userId: string) =>
+      apiFetch(`/api/credits/create-order?user_id=${userId}`, {
         method: "POST",
         body: JSON.stringify(body),
       }),
     orders: (userId: string) =>
       apiFetch(`/api/credits/orders/${userId}`),
+  },
+  payments: {
+    verify: (body: object) =>
+      apiFetch("/api/payments/verify", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  },
+  referral: {
+    stats: (userId: string, baseUrl?: string) => {
+      const q = baseUrl ? `?base_url=${encodeURIComponent(baseUrl)}` : "";
+      return apiFetch(`/api/referral/${userId}${q}`);
+    },
+    claim: (body: { referee_id: string; referral_code: string }) =>
+      apiFetch("/api/referral/claim", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
   directory: {
     list: (userId: string, params?: Record<string, string>) => {

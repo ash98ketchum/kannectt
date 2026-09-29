@@ -38,14 +38,28 @@ class CreditBalance(BaseModel):
     balance: int
 
 
-class CheckoutRequest(BaseModel):
+class CreateOrderRequest(BaseModel):
     package: Literal["starter", "pro", "power"]
-    success_url: str
-    cancel_url: str
 
 
-class CheckoutResponse(BaseModel):
-    checkout_url: str
+class CreateOrderResponse(BaseModel):
+    order_id: str
+    amount: int        # paise
+    currency: str      # "INR"
+
+
+class VerifyPaymentRequest(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+    user_id: str
+    package: Literal["starter", "pro", "power"]
+
+
+class VerifyPaymentResponse(BaseModel):
+    success: bool
+    credits_added: int
+    new_balance: int
 
 
 # ── Directory ─────────────────────────────────────────────────────────────────
@@ -97,7 +111,7 @@ class CreditOrder(BaseModel):
     id: str
     package: str
     credits: int
-    amount_usd_cents: int
+    amount_inr_paise: int
     status: Literal["pending", "completed", "failed"]
     created_at: datetime
 
