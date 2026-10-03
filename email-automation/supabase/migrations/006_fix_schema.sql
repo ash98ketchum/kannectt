@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- 006 Fix schema — add missing Razorpay columns and make email nullable
+-- 006 Fix schema — add missing Razorpay columns and remove Stripe constraints
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Run in Supabase Dashboard → SQL Editor
 
@@ -8,6 +8,12 @@ alter table public.credit_orders
   add column if not exists razorpay_order_id   text,
   add column if not exists razorpay_payment_id text,
   add column if not exists amount_inr_paise    integer default 0;
+
+-- 2. Remove NOT NULL constraints from old Stripe columns (if they exist)
+alter table public.credit_orders 
+  alter column amount_usd_cents drop not null;
+alter table public.credit_orders 
+  alter column stripe_session_id drop not null;
 
 -- 2. Index for fast lookup by Razorpay order ID
 create index if not exists credit_orders_rzp_order_idx
