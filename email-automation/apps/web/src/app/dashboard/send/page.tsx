@@ -185,7 +185,7 @@ export default function SendPage() {
         <div className="flex items-center gap-2 border border-red-900 bg-red-950/50 rounded-lg px-4 py-3 text-sm text-red-400">
           <AlertCircle size={14} /> {error}
           {error.includes("Insufficient") && (
-            <a href="/credits" className="ml-auto underline text-red-300">Buy credits</a>
+            <a href="/dashboard/credits" className="ml-auto underline text-red-300">Buy credits</a>
           )}
         </div>
       )}
@@ -391,7 +391,7 @@ export default function SendPage() {
               {sending ? "Sending…" : `Send all · ${creditCost} credits`}
             </button>
             {!hasEnough && balance !== null && (
-              <a href="/credits" className="text-xs text-yellow-400 underline">Need more credits</a>
+              <a href="/dashboard/credits" className="text-xs text-yellow-400 underline">Need more credits</a>
             )}
             {hasResume && (
               <p className="text-xs text-cream-300/30 flex items-center gap-1">
