@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
@@ -8,9 +9,7 @@ from app.routers import emails, credits, directory, webhooks, profile, payments,
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     yield
-    # Shutdown
 
 
 app = FastAPI(
@@ -27,6 +26,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Global exception handler — always sends CORS headers so browser
+#    never sees a CORS error instead of the real error ──────────────────────
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    origin = request.headers.get("origin", "")
+    headers = {}
+    if origin and origin in settings.allowed_origins_list:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {exc}"},
+        headers=headers,
+    )
+
 
 app.include_router(emails.router,    prefix="/api/send",      tags=["Send"])
 app.include_router(credits.router,   prefix="/api/credits",   tags=["Credits"])

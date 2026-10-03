@@ -109,15 +109,15 @@ export default function DashboardPage() {
 
       {/* Quick actions */}
       <div className="flex gap-3">
-        <Link href="/send"
+        <Link href="/dashboard/send"
           className="bg-cream-300 text-[#0A0905] px-4 py-2 rounded-lg text-sm font-medium hover:bg-cream-200 transition">
           Send emails
         </Link>
-        <Link href="/directory"
+        <Link href="/dashboard/directory"
           className="border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition">
           Browse directory
         </Link>
-        <Link href="/credits"
+        <Link href="/dashboard/credits"
           className="border border-cream-300/[0.12] px-4 py-2 rounded-lg text-sm hover:border-cream-300/25 transition">
           Buy credits
         </Link>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
           {data.recent.length === 0 ? (
             <p className="px-4 py-8 text-sm text-cream-300/30 text-center">
               No emails sent yet.{" "}
-              <Link href="/send" className="underline text-cream-300/55">Send your first one →</Link>
+              <Link href="/dashboard/send" className="underline text-cream-300/55">Send your first one →</Link>
             </p>
           ) : (
             <table className="w-full text-sm">
