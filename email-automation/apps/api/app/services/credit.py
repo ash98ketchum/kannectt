@@ -13,7 +13,17 @@ def _get_row(db, user_id: str) -> dict:
     rows = result.data or []
     if not rows:
         # User exists in auth.users but not yet in public.users — create them
-        db.table("users").insert({"id": user_id, "credits_balance": 300}).execute()
+        # Fetch email from auth.users via admin API
+        try:
+            auth_user = db.auth.admin.get_user_by_id(user_id)
+            email = auth_user.user.email if auth_user and auth_user.user else f"{user_id}@unknown"
+        except Exception:
+            email = f"{user_id}@unknown"
+        db.table("users").insert({
+            "id": user_id,
+            "email": email,
+            "credits_balance": 300,
+        }).execute()
         return {"credits_balance": 300}
     return rows[0]
 
