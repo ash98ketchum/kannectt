@@ -18,10 +18,10 @@ export default function ReferralPage() {
   const [copied, setCopied]   = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
       const origin = window.location.origin;
-      (api.referral.stats(data.user.id, origin) as Promise<ReferralStats>)
+      (api.referral.stats(session.user.id, origin) as Promise<ReferralStats>)
         .then(r => setStats(r))
         .catch(() => null)
         .finally(() => setLoading(false));

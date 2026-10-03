@@ -21,9 +21,9 @@ export default function DirectoryPage() {
 
   // Fetch user + initial contacts
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      const uid = session.user.id;
       setUserId(uid);
       (api.credits.balance(uid) as Promise<{ balance: number }>)
         .then(r => setBalance(r.balance))

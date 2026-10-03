@@ -48,9 +48,9 @@ export default function SendPage() {
 
   // ── Boot: load user, balance, saved resume ──────────────────────────────
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const uid = session.user.id;
       setUserId(uid);
 
       // Load balance

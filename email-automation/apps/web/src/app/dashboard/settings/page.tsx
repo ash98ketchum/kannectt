@@ -18,11 +18,11 @@ export default function SettingsPage() {
   const [currentEmail, setCurrentEmail] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      setUserId(data.user.id);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      setUserId(session.user.id);
       setLoading(true);
-      (api.profile.getGmail(data.user.id) as Promise<{ sender_email: string; is_configured: boolean }>)
+      (api.profile.getGmail(session.user.id) as Promise<{ sender_email: string; is_configured: boolean }>)
         .then(r => {
           setConfigured(r.is_configured);
           setCurrentEmail(r.sender_email || "");

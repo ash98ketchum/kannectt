@@ -54,11 +54,12 @@ export default function CreditsPage() {
 
   /* Load balance + order history on mount */
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    // Use getSession for more reliable client-side auth detection
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      const uid = session.user.id;
       setUserId(uid);
-      setUserEmail(data.user.email ?? "");
+      setUserEmail(session.user.email ?? "");
 
       (api.credits.balance(uid) as Promise<{ balance: number }>)
         .then(r => setBalance(r.balance))
