@@ -27,10 +27,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    void (async () => {
-      const res = await supabase.auth.getSession();
-      const user = res.data.session?.user;
-      if (!user) return;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const user = session.user;
 
       const [profileRes, sendsRes, unlocksRes] = await Promise.all([
         supabase.from("users").select("credits_balance").eq("id", user.id).single(),
