@@ -54,11 +54,13 @@ export default function CreditsPage() {
 
   /* Load balance + order history on mount */
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid   = data.session?.user?.id;
+      const email = data.session?.user?.email ?? "";
+      if (!uid) return;
       setUserId(uid);
-      setUserEmail(data.user.email ?? "");
+      setUserEmail(email);
 
       (api.credits.balance(uid) as Promise<{ balance: number }>)
         .then(r => setBalance(r.balance))
@@ -67,7 +69,7 @@ export default function CreditsPage() {
       (api.credits.orders(uid) as Promise<{ orders: CreditOrder[] }>)
         .then(r => setOrders(r.orders))
         .catch(() => null);
-    });
+    })();
   }, []);
 
   /* ── Main buy handler ────────────────────────────────────────────────── */

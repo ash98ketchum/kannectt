@@ -27,10 +27,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-      const user = session.user;
+    void (async () => {
+      const res = await supabase.auth.getSession();
+      const user = res.data.session?.user;
+      if (!user) return;
 
       const [profileRes, sendsRes, unlocksRes] = await Promise.all([
         supabase.from("users").select("credits_balance").eq("id", user.id).single(),
@@ -42,7 +42,7 @@ export default function DashboardPage() {
         supabase.from("user_unlocks").select("contact_id").eq("user_id", user.id),
       ]);
 
-      const sentCount = (sendsRes.data ?? []).filter((r) => r.status === "sent").length;
+      const sentCount = (sendsRes.data ?? []).filter((r: { status: string }) => r.status === "sent").length;
 
       setData({
         email:        user.email ?? "",

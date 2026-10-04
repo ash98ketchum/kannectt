@@ -18,14 +18,16 @@ export default function ReferralPage() {
   const [copied, setCopied]   = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) return;
       const origin = window.location.origin;
-      (api.referral.stats(data.user.id, origin) as Promise<ReferralStats>)
+      (api.referral.stats(uid, origin) as Promise<ReferralStats>)
         .then(r => setStats(r))
         .catch(() => null)
         .finally(() => setLoading(false));
-    });
+    })();
   }, []);
 
   const copyLink = () => {
