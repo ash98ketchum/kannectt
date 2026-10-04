@@ -8,12 +8,12 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 const NAV = [
-  { href: "/dashboard",  label: "Dashboard",    icon: LayoutDashboard },
-  { href: "/directory",  label: "Directory",    icon: BookOpen },
-  { href: "/send",       label: "Send",         icon: Send },
-  { href: "/credits",    label: "Credits",      icon: CreditCard },
-  { href: "/referral",   label: "Refer & Earn", icon: Gift },
-  { href: "/settings",   label: "Gmail Setup",  icon: Settings },
+  { href: "/dashboard",          label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/dashboard/directory", label: "Directory",    icon: BookOpen },
+  { href: "/dashboard/send",      label: "Send",         icon: Send },
+  { href: "/dashboard/credits",   label: "Credits",      icon: CreditCard },
+  { href: "/dashboard/referral",  label: "Refer & Earn", icon: Gift },
+  { href: "/dashboard/settings",  label: "Gmail Setup",  icon: Settings },
 ];
 
 export default function Sidebar() {

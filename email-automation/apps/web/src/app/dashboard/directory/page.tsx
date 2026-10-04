@@ -118,7 +118,7 @@ export default function DirectoryPage() {
         <div className="flex items-center gap-2 border border-red-900 bg-red-950/50 rounded-lg px-4 py-3 text-sm text-red-400">
           <AlertCircle size={14} /> {error}
           {error.toLowerCase().includes("credit") && (
-            <a href="/credits" className="ml-auto underline text-red-300">Buy more</a>
+            <a href="/dashboard/credits" className="ml-auto underline text-red-300">Buy more</a>
           )}
         </div>
       )}
@@ -145,7 +145,7 @@ export default function DirectoryPage() {
       {cart.length > 0 && balance !== null && balance < cartCost && (
         <div className="border border-yellow-900 bg-yellow-950/50 rounded-lg px-4 py-3 text-sm text-yellow-400 flex items-center justify-between">
           <span>Not enough credits. Need {cartCost}, have {balance}.</span>
-          <a href="/credits" className="underline text-yellow-300">Buy more</a>
+          <a href="/dashboard/credits" className="underline text-yellow-300">Buy more</a>
         </div>
       )}
 
