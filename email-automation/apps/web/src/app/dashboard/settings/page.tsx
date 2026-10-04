@@ -18,11 +18,13 @@ export default function SettingsPage() {
   const [currentEmail, setCurrentEmail] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      setUserId(data.user.id);
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) return;
+      setUserId(uid);
       setLoading(true);
-      (api.profile.getGmail(data.user.id) as Promise<{ sender_email: string; is_configured: boolean }>)
+      (api.profile.getGmail(uid) as Promise<{ sender_email: string; is_configured: boolean }>)
         .then(r => {
           setConfigured(r.is_configured);
           setCurrentEmail(r.sender_email || "");
@@ -30,7 +32,7 @@ export default function SettingsPage() {
         })
         .catch(() => null)
         .finally(() => setLoading(false));
-    });
+    })();
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {

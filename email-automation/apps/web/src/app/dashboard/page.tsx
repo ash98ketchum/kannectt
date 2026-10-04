@@ -42,7 +42,7 @@ export default function DashboardPage() {
         supabase.from("user_unlocks").select("contact_id").eq("user_id", user.id),
       ]);
 
-      const sentCount = (sendsRes.data ?? []).filter((r) => r.status === "sent").length;
+      const sentCount = (sendsRes.data ?? []).filter((r: { status: string }) => r.status === "sent").length;
 
       setData({
         email:        user.email ?? "",

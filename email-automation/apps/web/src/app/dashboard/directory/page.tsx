@@ -21,15 +21,16 @@ export default function DirectoryPage() {
 
   // Fetch user + initial contacts
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) return;
       setUserId(uid);
       (api.credits.balance(uid) as Promise<{ balance: number }>)
         .then(r => setBalance(r.balance))
         .catch(() => null);
       fetchContacts(uid);
-    });
+    })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchContacts = useCallback(async (uid: string, deptFilter?: string) => {

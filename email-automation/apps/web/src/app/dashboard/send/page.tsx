@@ -48,9 +48,10 @@ export default function SendPage() {
 
   // ── Boot: load user, balance, saved resume ──────────────────────────────
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const uid = data.user.id;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) return;
       setUserId(uid);
 
       // Load balance
@@ -62,7 +63,7 @@ export default function SendPage() {
       api.profile.getResume(uid)
         .then(r => setSavedResume(r as ResumeMetadata))
         .catch(() => null);
-    });
+    })();
   }, []);
 
   // ── Resume actions ───────────────────────────────────────────────────────
